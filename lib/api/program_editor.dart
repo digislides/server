@@ -77,7 +77,8 @@ class ProgramAccessor {
   }
 }
 
-MongoDb mongo(Context ctx) => new MongoDb('mongodb://localhost:27017/digislides');
+MongoDb mongo(Context ctx) =>
+    new MongoDb('mongodb://localhost:27017/digislides');
 
 @Api(path: '/api/program')
 @Wrap(const [mongo])
@@ -100,6 +101,7 @@ class ProgramEditorRoutes {
   Future<Map> update(Context ctx) async {
     String userId = getUserId(ctx);
     String progId = ctx.pathParams['id'];
+    // TODO lock program
     Db db = ctx.getInterceptorResult<Db>(MongoDb);
     final accessor = new ProgramAccessor(db);
     Map map = await accessor.get(progId);
@@ -112,10 +114,13 @@ class ProgramEditorRoutes {
           'Does not have write access'); // TODO throw appropriate error
     }
     Map data = await ctx.req.bodyAsJsonMap();
-    data.remove('owner');
-    data.remove('writers');
-    data.remove('readers');
+    data['name'] = map['name'];
+    data['owner'] = map['owner'];
+    data['writers'] = map['writers'];
+    data['readers'] = map['readers'];
+    data.remove('_id');
     await accessor.update(progId, data);
+    // TODO unlock program
     return accessor.get(progId);
   }
 
