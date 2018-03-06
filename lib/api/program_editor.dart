@@ -181,8 +181,26 @@ class ProgramEditorRoutes {
   }
 
   /// Route to duplicate a program
-  Future<List<Map>> duplicate(Context ctx) {
+  Future<Map> duplicate(Context ctx) async {
+    String userId = getUserId(ctx);
+    String progId = ctx.pathParams['id'];
+    Db db = ctx.getInterceptorResult<Db>(MongoDb);
+    final accessor = new ProgramAccessor(db);
+    Map map = await accessor.get(progId);
+    if (map == null) throw programByIdNotFound(progId);
+    Program pg = new Program.fromMap(map);
+    if (!pg.hasReadAccess(userId))  throw doNotHaveReadAccess(progId);
+
+    map['name'] = map['name'] + '_Copy';
+    map['owner'] = userId;
+    data['writers'] = map['writers'];
+    data['readers'] = map['readers'];
+    data.remove('_id');
+
     // TODO
+
+    await accessor.create(map);
+    return accessor.get(newprogId.toHexString());
   }
 
   /// Route to edit a program
