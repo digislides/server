@@ -64,7 +64,7 @@ class ProgramAccessor {
 
   ProgramAccessor(this.db);
 
-  Future create(Map data) => db.collection('p').insert(data);
+  Future<void> create(Map data) => db.collection('p').insert(data);
 
   Future<Map> get(String id) =>
       db.collection('p').findOne(where.id(new ObjectId.fromHexString(id)));
@@ -79,6 +79,9 @@ class ProgramAccessor {
 
   Future<Map> save(String id, Map data) =>
       db.collection('p').update(where.id(new ObjectId.fromHexString(id)), data);
+
+  Future<Map> setPublish(String id, Map data) => db.collection('p').update(
+      where.id(new ObjectId.fromHexString(id)), modify.set('published', data));
 
   Future<Map> edit(String id, String name, int width, int height,
           List<String> writers, List<String> readers) =>
@@ -99,17 +102,17 @@ class ProgramAccessor {
 MongoDb mongo(Context ctx) =>
     new MongoDb('mongodb://localhost:27017/digislides');
 
+programByIdNotFound(String id) => new Exception();
+
+doNotHaveReadAccess(String id) => new Exception();
+
+doNotHaveWriteAccess(String id) => new Exception();
+
+String getUserId(Context ctx) => '1' * 24;
+
 @Api(path: '/api/program')
 @Wrap(const [mongo])
 class ProgramEditorRoutes {
-  String getUserId(Context ctx) => '1' * 24;
-
-  programByIdNotFound(String id) => new Exception();
-
-  doNotHaveReadAccess(String id) => new Exception();
-
-  doNotHaveWriteAccess(String id) => new Exception();
-
   /// Route to create a new program
   @PostJson()
   Future<Map> create(Context ctx) async {
@@ -153,7 +156,7 @@ class ProgramEditorRoutes {
     Map map = await new ProgramAccessor(db).get(progId);
     if (map == null) throw programByIdNotFound(progId);
     Program pg = new Program.fromMap(map);
-    if (!pg.hasReadAccess(userId))  throw doNotHaveReadAccess(progId);
+    if (!pg.hasReadAccess(userId)) throw doNotHaveReadAccess(progId);
     return map;
   }
 
@@ -167,7 +170,7 @@ class ProgramEditorRoutes {
     Map map = await accessor.get(progId);
     if (map == null) throw programByIdNotFound(progId);
     Program pg = new Program.fromMap(map);
-    if (!pg.hasWriteAccess(userId))  throw doNotHaveWriteAccess(progId);
+    if (!pg.hasWriteAccess(userId)) throw doNotHaveWriteAccess(progId);
     await accessor.delete(progId);
     return accessor.getByUser(userId);
   }
@@ -189,18 +192,16 @@ class ProgramEditorRoutes {
     Map map = await accessor.get(progId);
     if (map == null) throw programByIdNotFound(progId);
     Program pg = new Program.fromMap(map);
-    if (!pg.hasReadAccess(userId))  throw doNotHaveReadAccess(progId);
+    if (!pg.hasReadAccess(userId)) throw doNotHaveReadAccess(progId);
 
     map['name'] = map['name'] + '_Copy';
     map['owner'] = userId;
-    data['writers'] = map['writers'];
-    data['readers'] = map['readers'];
-    data.remove('_id');
-
-    // TODO
-
+    map['writers'] = null;
+    map['readers'] = null;
+    ObjectId newProgId = new ObjectId();
+    map['_id'] = newProgId;
     await accessor.create(map);
-    return accessor.get(newprogId.toHexString());
+    return accessor.get(newProgId.toHexString());
   }
 
   /// Route to edit a program
@@ -213,33 +214,30 @@ class ProgramEditorRoutes {
     Map map = await accessor.get(progId);
     if (map == null) throw programByIdNotFound(progId);
     Program pg = new Program.fromMap(map);
-    if (!pg.hasWriteAccess(userId))  throw doNotHaveWriteAccess(progId);
+    if (!pg.hasWriteAccess(userId)) throw doNotHaveWriteAccess(progId);
     Map data = await ctx.req.bodyAsJsonMap();
     await accessor.edit(progId, data['name'], data['width'], data['height'],
         data['writers'], data['readers']);
     return accessor.get(progId);
   }
-}
 
-class Published {
-  String id;
-
-  String name;
-
-  String programId;
-
-  String version;
-
-  dynamic data;
-}
-
-class PublishedRoutes {
-  publish(Context ctx) {
-    // TODO
-  }
-
-  listPublished(Context ctx) {
-    // TODO
+  @Post(path: '/:id')
+  Future<Map> publish(Context ctx) async {
+    String userId = getUserId(ctx);
+    String progId = ctx.pathParams['id'];
+    Db db = ctx.getInterceptorResult<Db>(MongoDb);
+    final accessor = new ProgramAccessor(db);
+    Map map = await accessor.get(progId);
+    if (map == null) throw programByIdNotFound(progId);
+    Program pg = new Program.fromMap(map);
+    if (!pg.hasWriteAccess(userId)) throw doNotHaveWriteAccess(progId);
+    map.remove('name');
+    map.remove('owner');
+    map.remove('writers');
+    map.remove('readers');
+    map['on'] = new DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000;
+    await accessor.setPublish(progId, map);
+    return accessor.get(progId);
   }
 }
 
