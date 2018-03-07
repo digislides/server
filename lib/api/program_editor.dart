@@ -142,6 +142,7 @@ class ProgramEditorRoutes {
     data['owner'] = map['owner'];
     data['writers'] = map['writers'];
     data['readers'] = map['readers'];
+    data['published'] = map['published'];
     data.remove('_id');
     await accessor.save(progId, data);
     return accessor.get(progId);
@@ -184,6 +185,7 @@ class ProgramEditorRoutes {
   }
 
   /// Route to duplicate a program
+  @PostJson(path: '/duplicate/:id')
   Future<Map> duplicate(Context ctx) async {
     String userId = getUserId(ctx);
     String progId = ctx.pathParams['id'];
@@ -198,6 +200,7 @@ class ProgramEditorRoutes {
     map['owner'] = userId;
     map['writers'] = null;
     map['readers'] = null;
+    map['published'] = null;
     ObjectId newProgId = new ObjectId();
     map['_id'] = newProgId;
     await accessor.create(map);
@@ -221,7 +224,7 @@ class ProgramEditorRoutes {
     return accessor.get(progId);
   }
 
-  @Post(path: '/:id')
+  @PostJson(path: '/publish/:id')
   Future<Map> publish(Context ctx) async {
     String userId = getUserId(ctx);
     String progId = ctx.pathParams['id'];
@@ -235,6 +238,7 @@ class ProgramEditorRoutes {
     map.remove('owner');
     map.remove('writers');
     map.remove('readers');
+    map.remove('published');
     map['on'] = new DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000;
     await accessor.setPublish(progId, map);
     return accessor.get(progId);
