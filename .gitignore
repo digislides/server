@@ -10,3 +10,4 @@ doc/api/
 
 *.iml
 .idea
+.dart_tool
