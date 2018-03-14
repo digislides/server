@@ -253,12 +253,12 @@ class Frame {
   int height;
 
   String programId;
-
-  String programVersion;
 }
 
 class Player {
   String id;
+
+  String name;
 
   String owner;
 
