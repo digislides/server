@@ -69,13 +69,13 @@ class ProgramAccessor {
   Future<Map> get(String id) =>
       db.collection('p').findOne(where.id(new ObjectId.fromHexString(id)));
 
-  Future<List<Map>> getByUser(String user) => db
-      .collection('p')
-      .find(where
-        ..or(where.eq('owner', user))
-        ..or(where.oneFrom('writers', [user]))
-        ..or(where.oneFrom('readers', [user])))
-      .toList();
+  Future<List<Map>> getByUser(String user) {
+    SelectorBuilder b = where
+        .eq('owner', user)
+        .or(where.oneFrom('writers', [user]))
+        .or(where.oneFrom('readers', [user]));
+    return db.collection('p').find(b).toList();
+  }
 
   Future<Map> save(String id, Map data) =>
       db.collection('p').update(where.id(new ObjectId.fromHexString(id)), data);
@@ -253,12 +253,12 @@ class Frame {
   int height;
 
   String programId;
-
-  String programVersion;
 }
 
 class Player {
   String id;
+
+  String name;
 
   String owner;
 
