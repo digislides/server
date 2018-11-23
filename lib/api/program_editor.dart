@@ -262,24 +262,93 @@ class Player {
 
   String owner;
 
-  int width;
+  List<String> writers;
 
-  int height;
+  List<String> readers;
 
   List<Frame> frames;
+
+  Player.fromMap(Map map) {
+    id = map['id'];
+    name = map['name'];
+    owner = map['owner'];
+    writers = map['writers'] ?? <String>[];
+    readers = map['readers'] ?? <String>[];
+    frames = map['frames'] ?? <Frame>[];
+  }
+
+  bool hasReadAccess(String accessorId) =>
+      accessorId != null &&
+          (owner == accessorId ||
+              readers.contains(accessorId) ||
+              writers.contains(accessorId));
+
+  bool hasWriteAccess(String accessorId) =>
+      accessorId != null &&
+          (owner == accessorId || writers.contains(accessorId));
 }
 
+class PlayerAccessor {
+  Db db;
+
+  PlayerAccessor(this.db);
+
+  DbCollection get pl => db.collection('pl');
+
+  Future<void> create(Map data) => pl.insert(data);
+
+  Future<Map> get(String id) =>
+      pl.findOne(where.id(new ObjectId.fromHexString(id)));
+
+  Future<List<Map>> getByUser(String user) {
+    SelectorBuilder b = where
+        .eq('owner', user)
+        .or(where.oneFrom('writers', [user]))
+        .or(where.oneFrom('readers', [user]));
+    return pl.find(b).toList();
+  }
+
+  Future<Map> save(String id, Map data) =>
+      pl.update(where.id(new ObjectId.fromHexString(id)), data);
+
+  Future delete(String id) async {
+    await pl.remove(where.id(new ObjectId.fromHexString(id)));
+  }
+}
+
+@Api(path: '/api/player')
+@Wrap(const [mongo])
 class PlayerRoutes {
-  create(Context ctx) {
-    // TODO
+  /// Route to create a new player
+  @PostJson()
+  Future<Map> create(Context ctx) async {
+    String userId = getUserId(ctx);
+    Db db = ctx.getInterceptorResult<Db>(MongoDb);
+    final accessor = new PlayerAccessor(db);
+    Map data = await ctx.req.bodyAsJsonMap();
+    ObjectId plId = new ObjectId();
+    ProgramCreator cre = new ProgramCreator.fromMap(plId, userId, data);
+    await accessor.create(cre.toMap);
+    return accessor.get(plId.toHexString());
   }
 
   save(Context ctx) {
     // TODO
   }
 
-  delete(Context ctx) {
-    // TODO
+  /// Route to delete a program by id
+  @DeleteJson(path: '/:id')
+  Future<List<Map>> delete(Context ctx) async {
+    String userId = getUserId(ctx);
+    String plId = ctx.pathParams['id'];
+    Db db = ctx.getInterceptorResult<Db>(MongoDb);
+    final accessor = new PlayerAccessor(db);
+    Map map = await accessor.get(plId);
+    if (map == null) throw programByIdNotFound(plId);
+    Player pg = new Player.fromMap(map);
+    if (!pg.hasWriteAccess(userId)) throw doNotHaveWriteAccess(plId);
+    await accessor.delete(plId);
+    return accessor.getByUser(userId);
   }
 
   get(Context ctx) {
