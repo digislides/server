@@ -1,127 +1,16 @@
-import 'dart:async';
-import 'package:jaguar/jaguar.dart';
-import 'package:jaguar_mongo/jaguar_mongo.dart';
-import 'package:mongo_dart/mongo_dart.dart';
+part of 'api.dart';
 
-class Program {
-  String id;
-
-  String name;
-
-  String owner;
-
-  List<String> writers;
-
-  List<String> readers;
-
-  Program.fromMap(Map map) {
-    id = map['id'];
-    name = map['name'];
-    owner = map['owner'];
-    writers = map['writers'] ?? <String>[];
-    readers = map['readers'] ?? <String>[];
-  }
-
-  bool hasReadAccess(String accessorId) =>
-      accessorId != null &&
-      (owner == accessorId ||
-          readers.contains(accessorId) ||
-          writers.contains(accessorId));
-
-  bool hasWriteAccess(String accessorId) =>
-      accessorId != null &&
-      (owner == accessorId || writers.contains(accessorId));
-}
-
-class ProgramCreator {
-  ObjectId id;
-
-  String owner;
-
-  String name;
-
-  int width;
-
-  int height;
-
-  ProgramCreator.fromMap(this.id, this.owner, Map map) {
-    name = map['name'];
-    width = map['width'];
-    height = map['height'];
-  }
-
-  Map get toMap => {
-        '_id': id,
-        'name': name,
-        'width': width,
-        'height': height,
-        'owner': owner,
-      };
-}
-
-class ProgramAccessor {
-  Db db;
-
-  ProgramAccessor(this.db);
-
-  Future<void> create(Map data) => db.collection('p').insert(data);
-
-  Future<Map> get(String id) =>
-      db.collection('p').findOne(where.id(new ObjectId.fromHexString(id)));
-
-  Future<List<Map>> getByUser(String user) {
-    SelectorBuilder b = where
-        .eq('owner', user)
-        .or(where.oneFrom('writers', [user]))
-        .or(where.oneFrom('readers', [user]));
-    return db.collection('p').find(b).toList();
-  }
-
-  Future<Map> save(String id, Map data) =>
-      db.collection('p').update(where.id(new ObjectId.fromHexString(id)), data);
-
-  Future<Map> setPublish(String id, Map data) => db.collection('p').update(
-      where.id(new ObjectId.fromHexString(id)), modify.set('published', data));
-
-  Future<Map> edit(String id, String name, int width, int height,
-          List<String> writers, List<String> readers) =>
-      db.collection('p').update(
-          where.id(new ObjectId.fromHexString(id)),
-          modify
-            ..set('name', name)
-            ..set('width', width)
-            ..set('height', height)
-            ..set('writers', writers)
-            ..set('readers', readers));
-
-  Future delete(String id) async {
-    await db.collection('p').remove(where.id(new ObjectId.fromHexString(id)));
-  }
-}
-
-MongoDb mongo(Context ctx) =>
-    new MongoDb('mongodb://localhost:27017/digislides');
-
-programByIdNotFound(String id) => new Exception();
-
-doNotHaveReadAccess(String id) => new Exception();
-
-doNotHaveWriteAccess(String id) => new Exception();
-
-String getUserId(Context ctx) => '1' * 24;
-
-@Api(path: '/api/program')
-@Wrap(const [mongo])
+@GenController(path: '/program')
 class ProgramEditorRoutes {
   /// Route to create a new program
   @PostJson()
   Future<Map> create(Context ctx) async {
     String userId = getUserId(ctx);
-    Db db = ctx.getInterceptorResult<Db>(MongoDb);
-    final accessor = new ProgramAccessor(db);
+    final db = await pool(ctx);
+    final accessor = ProgramAccessor(db);
     Map data = await ctx.req.bodyAsJsonMap();
-    ObjectId progId = new ObjectId();
-    ProgramCreator cre = new ProgramCreator.fromMap(progId, userId, data);
+    ObjectId progId = ObjectId();
+    var cre = ProgramCreator.fromMap(progId, userId, data);
     await accessor.create(cre.toMap);
     return accessor.get(progId.toHexString());
   }
@@ -131,11 +20,11 @@ class ProgramEditorRoutes {
   Future<Map> save(Context ctx) async {
     String userId = getUserId(ctx);
     String progId = ctx.pathParams['id'];
-    Db db = ctx.getInterceptorResult<Db>(MongoDb);
-    final accessor = new ProgramAccessor(db);
+    final db = await pool(ctx);
+    final accessor = ProgramAccessor(db);
     Map map = await accessor.get(progId);
     if (map == null) throw programByIdNotFound(progId);
-    Program pg = new Program.fromMap(map);
+    var pg = Program.fromMap(map);
     if (!pg.hasWriteAccess(userId)) throw doNotHaveWriteAccess(progId);
     Map data = await ctx.req.bodyAsJsonMap();
     data['name'] = map['name'];
@@ -153,10 +42,10 @@ class ProgramEditorRoutes {
   Future<Map> getById(Context ctx) async {
     String userId = getUserId(ctx);
     String progId = ctx.pathParams['id'];
-    Db db = ctx.getInterceptorResult<Db>(MongoDb);
-    Map map = await new ProgramAccessor(db).get(progId);
+    final db = await pool(ctx);
+    Map map = await ProgramAccessor(db).get(progId);
     if (map == null) throw programByIdNotFound(progId);
-    Program pg = new Program.fromMap(map);
+    Program pg = Program.fromMap(map);
     if (!pg.hasReadAccess(userId)) throw doNotHaveReadAccess(progId);
     return map;
   }
@@ -166,11 +55,11 @@ class ProgramEditorRoutes {
   Future<List<Map>> delete(Context ctx) async {
     String userId = getUserId(ctx);
     String progId = ctx.pathParams['id'];
-    Db db = ctx.getInterceptorResult<Db>(MongoDb);
-    final accessor = new ProgramAccessor(db);
+    final db = await pool(ctx);
+    final accessor = ProgramAccessor(db);
     Map map = await accessor.get(progId);
     if (map == null) throw programByIdNotFound(progId);
-    Program pg = new Program.fromMap(map);
+    Program pg = Program.fromMap(map);
     if (!pg.hasWriteAccess(userId)) throw doNotHaveWriteAccess(progId);
     await accessor.delete(progId);
     return accessor.getByUser(userId);
@@ -179,8 +68,8 @@ class ProgramEditorRoutes {
   @GetJson()
   Future<List<Map>> getAll(Context ctx) async {
     String userId = getUserId(ctx);
-    Db db = ctx.getInterceptorResult<Db>(MongoDb);
-    final accessor = new ProgramAccessor(db);
+    final db = await pool(ctx);
+    final accessor = ProgramAccessor(db);
     return accessor.getByUser(userId);
   }
 
@@ -189,11 +78,11 @@ class ProgramEditorRoutes {
   Future<Map> duplicate(Context ctx) async {
     String userId = getUserId(ctx);
     String progId = ctx.pathParams['id'];
-    Db db = ctx.getInterceptorResult<Db>(MongoDb);
-    final accessor = new ProgramAccessor(db);
+    final db = await pool(ctx);
+    final accessor = ProgramAccessor(db);
     Map map = await accessor.get(progId);
     if (map == null) throw programByIdNotFound(progId);
-    Program pg = new Program.fromMap(map);
+    Program pg = Program.fromMap(map);
     if (!pg.hasReadAccess(userId)) throw doNotHaveReadAccess(progId);
 
     map['name'] = map['name'] + '_Copy';
@@ -201,7 +90,7 @@ class ProgramEditorRoutes {
     map['writers'] = null;
     map['readers'] = null;
     map['published'] = null;
-    ObjectId newProgId = new ObjectId();
+    ObjectId newProgId = ObjectId();
     map['_id'] = newProgId;
     await accessor.create(map);
     return accessor.get(newProgId.toHexString());
@@ -212,11 +101,11 @@ class ProgramEditorRoutes {
   Future<Map> edit(Context ctx) async {
     String userId = getUserId(ctx);
     String progId = ctx.pathParams['id'];
-    Db db = ctx.getInterceptorResult<Db>(MongoDb);
-    final accessor = new ProgramAccessor(db);
+    final db = await pool(ctx);
+    final accessor = ProgramAccessor(db);
     Map map = await accessor.get(progId);
     if (map == null) throw programByIdNotFound(progId);
-    Program pg = new Program.fromMap(map);
+    Program pg = Program.fromMap(map);
     if (!pg.hasWriteAccess(userId)) throw doNotHaveWriteAccess(progId);
     Map data = await ctx.req.bodyAsJsonMap();
     await accessor.edit(progId, data['name'], data['width'], data['height'],
@@ -228,142 +117,19 @@ class ProgramEditorRoutes {
   Future<Map> publish(Context ctx) async {
     String userId = getUserId(ctx);
     String progId = ctx.pathParams['id'];
-    Db db = ctx.getInterceptorResult<Db>(MongoDb);
-    final accessor = new ProgramAccessor(db);
+    final db = await pool(ctx);
+    final accessor = ProgramAccessor(db);
     Map map = await accessor.get(progId);
     if (map == null) throw programByIdNotFound(progId);
-    Program pg = new Program.fromMap(map);
+    Program pg = Program.fromMap(map);
     if (!pg.hasWriteAccess(userId)) throw doNotHaveWriteAccess(progId);
     map.remove('name');
     map.remove('owner');
     map.remove('writers');
     map.remove('readers');
     map.remove('published');
-    map['on'] = new DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000;
+    map['on'] = DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000;
     await accessor.setPublish(progId, map);
     return accessor.get(progId);
-  }
-}
-
-class Frame {
-  String id;
-
-  int width;
-
-  int height;
-
-  String programId;
-}
-
-class Player {
-  String id;
-
-  String name;
-
-  String owner;
-
-  List<String> writers;
-
-  List<String> readers;
-
-  List<Frame> frames;
-
-  Player.fromMap(Map map) {
-    id = map['id'];
-    name = map['name'];
-    owner = map['owner'];
-    writers = map['writers'] ?? <String>[];
-    readers = map['readers'] ?? <String>[];
-    frames = map['frames'] ?? <Frame>[];
-  }
-
-  bool hasReadAccess(String accessorId) =>
-      accessorId != null &&
-          (owner == accessorId ||
-              readers.contains(accessorId) ||
-              writers.contains(accessorId));
-
-  bool hasWriteAccess(String accessorId) =>
-      accessorId != null &&
-          (owner == accessorId || writers.contains(accessorId));
-}
-
-class PlayerAccessor {
-  Db db;
-
-  PlayerAccessor(this.db);
-
-  DbCollection get pl => db.collection('pl');
-
-  Future<void> create(Map data) => pl.insert(data);
-
-  Future<Map> get(String id) =>
-      pl.findOne(where.id(new ObjectId.fromHexString(id)));
-
-  Future<List<Map>> getByUser(String user) {
-    SelectorBuilder b = where
-        .eq('owner', user)
-        .or(where.oneFrom('writers', [user]))
-        .or(where.oneFrom('readers', [user]));
-    return pl.find(b).toList();
-  }
-
-  Future<Map> save(String id, Map data) =>
-      pl.update(where.id(new ObjectId.fromHexString(id)), data);
-
-  Future delete(String id) async {
-    await pl.remove(where.id(new ObjectId.fromHexString(id)));
-  }
-}
-
-@Api(path: '/api/player')
-@Wrap(const [mongo])
-class PlayerRoutes {
-  /// Route to create a new player
-  @PostJson()
-  Future<Map> create(Context ctx) async {
-    String userId = getUserId(ctx);
-    Db db = ctx.getInterceptorResult<Db>(MongoDb);
-    final accessor = new PlayerAccessor(db);
-    Map data = await ctx.req.bodyAsJsonMap();
-    ObjectId plId = new ObjectId();
-    ProgramCreator cre = new ProgramCreator.fromMap(plId, userId, data);
-    await accessor.create(cre.toMap);
-    return accessor.get(plId.toHexString());
-  }
-
-  save(Context ctx) {
-    // TODO
-  }
-
-  /// Route to delete a program by id
-  @DeleteJson(path: '/:id')
-  Future<List<Map>> delete(Context ctx) async {
-    String userId = getUserId(ctx);
-    String plId = ctx.pathParams['id'];
-    Db db = ctx.getInterceptorResult<Db>(MongoDb);
-    final accessor = new PlayerAccessor(db);
-    Map map = await accessor.get(plId);
-    if (map == null) throw programByIdNotFound(plId);
-    Player pg = new Player.fromMap(map);
-    if (!pg.hasWriteAccess(userId)) throw doNotHaveWriteAccess(plId);
-    await accessor.delete(plId);
-    return accessor.getByUser(userId);
-  }
-
-  get(Context ctx) {
-    // TODO
-  }
-
-  getAll(Context ctx) {
-    // TODO
-  }
-
-  duplicate(Context ctx) {
-    // TODO
-  }
-
-  getRunning(Context ctx) {
-    // TODO
   }
 }
