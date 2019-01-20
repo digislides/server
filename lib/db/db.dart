@@ -54,7 +54,7 @@ class ProgramAccessor {
       where.id(new ObjectId.fromHexString(id)), modify.set('published', data));
 
   Future<Map> edit(String id, String name, int width, int height,
-      List<String> writers, List<String> readers) =>
+          List<String> writers, List<String> readers) =>
       db.collection('p').update(
           where.id(new ObjectId.fromHexString(id)),
           modify
