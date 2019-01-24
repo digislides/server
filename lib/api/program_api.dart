@@ -19,38 +19,38 @@ class ProgramRoutes extends Controller {
     return accessor.get(progId);
   }
 
-  /* TODO
   /// Route to save a program
   @PutJson(path: '/:id')
   Future<Map> save(Context ctx) async {
-    String userId = getUserId(ctx);
-    String progId = ctx.pathParams['id'];
+    String id = ctx.pathParams['id'];
+
+    final data = await ctx.bodyAsJsonMap();
+
     final db = await pool(ctx);
     final accessor = ProgramAccessor(db);
-    Map map = await accessor.get(progId);
-    if (map == null) throw programByIdNotFound(progId);
-    var pg = Program.fromMap(map);
-    if (!pg.hasWriteAccess(userId)) throw doNotHaveWriteAccess(progId);
-    Map data = await ctx.req.bodyAsJsonMap();
-    data['name'] = map['name'];
-    data['owner'] = map['owner'];
-    data['writers'] = map['writers'];
-    data['readers'] = map['readers'];
-    data['published'] = map['published'];
-    data.remove('_id');
-    await accessor.save(progId, data);
-    return accessor.get(progId);
+
+    // Check if the current user has write access
+    Map map = await accessor.getInfo(id);
+    if (map == null) throw programByIdNotFound(id);
+    // TODO check if the current user has write access
+
+    // Save
+    await accessor.save(id, data);
+
+    // Fetch the program
+    return accessor.get(id);
   }
-  */
 
   /// Route to get a program by id
   @GetJson(path: '/:id')
   Future<Map> getById(Context ctx) async {
     String progId = ctx.pathParams['id'];
+
     final db = await pool(ctx);
     Map map = await ProgramAccessor(db).get(progId);
     if (map == null) throw programByIdNotFound(progId);
     // TODO check if the current user has read access to the program
+
     return map;
   }
 

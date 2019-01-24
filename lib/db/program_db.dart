@@ -16,9 +16,13 @@ class ProgramAccessor {
   }
 
   Future<Map> get(String id) {
+    return db.collection('p').findOne(where.id(ObjectId.fromHexString(id)));
+  }
+
+  Future<Map> getInfo(String id) {
     return db
         .collection('p')
-        .findOne(where.id(ObjectId.fromHexString(id)));
+        .findOne(where.id(ObjectId.fromHexString(id)).fields(["id"]));
   }
 
   Future<List<Map>> getByUser(String user) {
@@ -29,8 +33,10 @@ class ProgramAccessor {
     return db.collection('p').find(b).toList();
   }
 
-  Future<Map> save(String id, Map data) =>
-      db.collection('p').update(where.id(new ObjectId.fromHexString(id)), data);
+  Future<void> save(String id, Map data) async {
+    await db.collection('p').update(
+        where.id(ObjectId.fromHexString(id)), modify.set("design", data));
+  }
 
   Future<Map> setPublish(String id, Map data) => db.collection('p').update(
       where.id(new ObjectId.fromHexString(id)), modify.set('published', data));
