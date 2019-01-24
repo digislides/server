@@ -1,5 +1,6 @@
 part of 'api.dart';
 
+/*
 @GenController(path: '/player')
 class PlayerRoutes extends Controller {
   /// Route to create a new player
@@ -55,3 +56,4 @@ class PlayerRoutes extends Controller {
     // TODO
   }
 }
+*/

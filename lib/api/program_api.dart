@@ -5,16 +5,21 @@ class ProgramEditorRoutes {
   /// Route to create a new program
   @PostJson()
   Future<Map> create(Context ctx) async {
-    String userId = getUserId(ctx);
+    final data = await ctx.bodyAsJson(
+        convert: ProgramCreatorSerializer.serializer.fromMap);
+
+    // Establish database connection
     final db = await pool(ctx);
     final accessor = ProgramAccessor(db);
-    Map data = await ctx.req.bodyAsJsonMap();
-    ObjectId progId = ObjectId();
-    var cre = ProgramCreator.fromMap(progId, userId, data);
-    await accessor.create(cre.toMap);
-    return accessor.get(progId.toHexString());
+
+    // Create the program
+    final progId = await accessor.create(data);
+
+    // Fetch the program
+    return accessor.get(progId);
   }
 
+  /* TODO
   /// Route to save a program
   @PutJson(path: '/:id')
   Future<Map> save(Context ctx) async {
@@ -36,35 +41,32 @@ class ProgramEditorRoutes {
     await accessor.save(progId, data);
     return accessor.get(progId);
   }
+  */
 
   /// Route to get a program by id
   @GetJson(path: '/:id')
   Future<Map> getById(Context ctx) async {
-    String userId = getUserId(ctx);
     String progId = ctx.pathParams['id'];
     final db = await pool(ctx);
     Map map = await ProgramAccessor(db).get(progId);
     if (map == null) throw programByIdNotFound(progId);
-    Program pg = Program.fromMap(map);
-    if (!pg.hasReadAccess(userId)) throw doNotHaveReadAccess(progId);
+    // TODO check if the current user has read access to the program
     return map;
   }
 
   /// Route to delete a program by id
   @DeleteJson(path: '/:id')
-  Future<List<Map>> delete(Context ctx) async {
-    String userId = getUserId(ctx);
+  Future<void> delete(Context ctx) async {
     String progId = ctx.pathParams['id'];
     final db = await pool(ctx);
     final accessor = ProgramAccessor(db);
     Map map = await accessor.get(progId);
     if (map == null) throw programByIdNotFound(progId);
-    Program pg = Program.fromMap(map);
-    if (!pg.hasWriteAccess(userId)) throw doNotHaveWriteAccess(progId);
+    // TODO check if current user has write access to the program
     await accessor.delete(progId);
-    return accessor.getByUser(userId);
   }
 
+  /* TODO
   @GetJson()
   Future<List<Map>> getAll(Context ctx) async {
     String userId = getUserId(ctx);
@@ -72,7 +74,9 @@ class ProgramEditorRoutes {
     final accessor = ProgramAccessor(db);
     return accessor.getByUser(userId);
   }
+  */
 
+  /* TODO
   /// Route to duplicate a program
   @PostJson(path: '/duplicate/:id')
   Future<Map> duplicate(Context ctx) async {
@@ -95,7 +99,9 @@ class ProgramEditorRoutes {
     await accessor.create(map);
     return accessor.get(newProgId.toHexString());
   }
+  */
 
+  /* TODO
   /// Route to edit a program
   @PutJson(path: '/edit/:id')
   Future<Map> edit(Context ctx) async {
@@ -112,7 +118,9 @@ class ProgramEditorRoutes {
         data['writers'], data['readers']);
     return accessor.get(progId);
   }
+  */
 
+  /*
   @PostJson(path: '/publish/:id')
   Future<Map> publish(Context ctx) async {
     String userId = getUserId(ctx);
@@ -132,4 +140,5 @@ class ProgramEditorRoutes {
     await accessor.setPublish(progId, map);
     return accessor.get(progId);
   }
+  */
 }
