@@ -19,5 +19,3 @@ programByIdNotFound(String id) => Exception();
 doNotHaveReadAccess(String id) => Exception();
 
 doNotHaveWriteAccess(String id) => Exception();
-
-String getUserId(Context ctx) => '1' * 24;

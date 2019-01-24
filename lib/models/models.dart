@@ -1,5 +1,5 @@
 import 'package:common/models.dart';
 
-class User {
-  String id;
+class ServerUser extends User {
+  String pwdHash;
 }
