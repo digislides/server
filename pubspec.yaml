@@ -17,3 +17,7 @@ dependencies:
   jaguar_dev_proxy:
   common:
     path: ../common
+
+dev_dependencies:
+  jaguar_serializer_cli:
+  build_runner:

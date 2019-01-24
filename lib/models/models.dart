@@ -1,5 +1,12 @@
+import 'package:jaguar_common/jaguar_common.dart';
 import 'package:common/models.dart';
 
-class ServerUser extends User {
+import 'package:server/serializer/serializer.dart';
+
+class ServerUser extends User implements AuthorizationUser {
   String pwdHash;
+
+  String get authorizationId => id;
+
+  static final serializer = ServerUserSerializer();
 }

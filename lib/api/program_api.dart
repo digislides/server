@@ -1,7 +1,7 @@
 part of 'api.dart';
 
 @GenController(path: '/program')
-class ProgramEditorRoutes {
+class ProgramRoutes extends Controller {
   /// Route to create a new program
   @PostJson()
   Future<Map> create(Context ctx) async {

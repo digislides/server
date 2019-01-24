@@ -6,10 +6,12 @@ import 'package:server/api/api.dart';
 
 void main(List<String> args) async {
   final server = Jaguar(port: 10000);
-  server.log.onRecord.listen((rec) {
-    print(rec);
-  });
-  server.add(reflect(ProgramEditorRoutes()));
-  server.addRoute(getOnlyProxy('', 'http://localhost:9000/'));
+  server.log.onRecord.listen(print);
+
+  server.add(reflect(AuthApi()));
+  server.add(reflect(UserApi()));
+
+  // server.addRoute(getOnlyProxy('', 'http://localhost:9000/'));
+
   await server.serve(logRequests: true);
 }
