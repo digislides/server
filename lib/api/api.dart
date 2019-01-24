@@ -11,6 +11,7 @@ import 'package:server/db/db.dart';
 
 part 'player_api.dart';
 part 'program_api.dart';
+part 'user_api.dart';
 
 final pool = MongoPool('mongodb://localhost:27017/digislides');
 
