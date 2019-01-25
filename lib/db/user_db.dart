@@ -5,6 +5,8 @@ class UserAccessor {
 
   UserAccessor(this.db);
 
+  DbCollection get col => db.collection('u');
+
   Future<String> create(Signup model) async {
     final id = ObjectId();
     final idStr = id.toString();
@@ -14,18 +16,17 @@ class UserAccessor {
       '_id': id,
       'id': idStr,
     });
-    await db.collection('u').insert(map);
+    await col.insert(map);
     return idStr;
   }
 
   Future<void> changePwd(String id, String pwd) async {
-    await db.collection('u').update(
+    await col.update(
         where.id(ObjectId.fromHexString(id)), modify.set("password", pwd));
   }
 
   Future<ServerUser> get(String id) {
-    return db
-        .collection('u')
+    return col
         .findOne(where.id(ObjectId.fromHexString(id)))
         .then(ServerUser.serializer.fromMap);
   }

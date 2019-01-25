@@ -7,3 +7,7 @@ part 'serializer.jser.dart';
 @GenSerializer()
 class ServerUserSerializer extends Serializer<ServerUser>
     with _$ServerUserSerializer {}
+
+@GenSerializer()
+class ProgramInfoSerializer extends Serializer<ProgramInfo>
+    with _$ProgramInfoSerializer {}

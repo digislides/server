@@ -10,3 +10,15 @@ class ServerUser extends User implements AuthorizationUser {
 
   static final serializer = ServerUserSerializer();
 }
+
+class ProgramInfo extends HasAccess {
+  String id;
+
+  String name;
+
+  String owner;
+
+  Map<String, int> members;
+
+  static final serializer = ProgramInfoSerializer();
+}
