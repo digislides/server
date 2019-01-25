@@ -7,23 +7,34 @@ class ChannelAccessor {
 
   DbCollection get col => db.collection('c');
 
-  Future<void> create(Map data) {
+  Future<String> create(ChannelCreator model, String owner) async {
+    final id = ObjectId();
+    final idStr = id.toString();
+    final query = ChannelCreator.serializer.toMap(model)
+      ..addAll({"_id": id, "id": idStr, "owner": owner});
+    await col.insert(query);
+    return idStr;
+  }
+
+  Future<String> duplicate(Channel channel) async {
+    final id = ObjectId();
+    final idStr = id.toString();
+    await col.insert(Channel.serializer.toMap(channel)
+      ..['id'] = idStr
+      ..['_id'] = id);
+    return idStr;
+  }
+
+  Future<Channel> get(String id) {
+    return col
+        .findOne(where.id(ObjectId.fromHexString(id)))
+        .then(Channel.serializer.fromMap);
+  }
+
+  Future<void> save(String id, Map data) {
     // TODO
+    col.update(where.id(ObjectId.fromHexString(id)), data);
   }
-
-  Future<Map> get(String id) =>
-      col.findOne(where.id(ObjectId.fromHexString(id)));
-
-  Future<List<Map>> getByUser(String user) {
-    SelectorBuilder b = where
-        .eq('owner', user)
-        .or(where.oneFrom('writers', [user]))
-        .or(where.oneFrom('readers', [user]));
-    return col.find(b).toList();
-  }
-
-  Future<Map> save(String id, Map data) =>
-      col.update(where.id(ObjectId.fromHexString(id)), data);
 
   Future delete(String id) async {
     await col.remove(where.id(ObjectId.fromHexString(id)));

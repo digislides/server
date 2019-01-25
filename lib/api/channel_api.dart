@@ -1,50 +1,100 @@
 part of 'api.dart';
 
-/*
-@GenController(path: '/player')
-class PlayerRoutes extends Controller {
+@GenController(path: '/channel')
+class ChannelRoutes extends Controller {
   /// Route to create a new player
   @PostJson()
-  Future<Map> create(Context ctx) async {
-    User user = ctx.getVariable<User>();
+  Future<Channel> create(Context ctx) async {
+    ChannelCreator data =
+        await ctx.bodyAsJson(convert: ChannelCreator.serializer.fromMap);
+    final ServerUser user = ctx.getVariable<ServerUser>();
+
+    // Establish database connection
     final db = await pool(ctx);
-    final accessor = PlayerAccessor(db);
-    Map data = await ctx.bodyAsJsonMap();
-    ObjectId plId = ObjectId();
-    ProgramCreator cre = ProgramCreator.fromMap(plId, userId, data);
-    await accessor.create(cre.toMap);
-    return accessor.get(plId.toHexString());
+    final accessor = ChannelAccessor(db);
+
+    // Create the channel
+    String id = await accessor.create(data, user.id);
+
+    // Fetch the channel
+    return accessor.get(id);
   }
 
-  save(Context ctx) {
+  @PutJson()
+  Future save(Context ctx) {
     // TODO
   }
 
   /// Route to delete a program by id
   @DeleteJson(path: '/:id')
-  Future<List<Map>> delete(Context ctx) async {
-    String userId = getUserId(ctx);
-    String plId = ctx.pathParams['id'];
+  Future<void> delete(Context ctx) async {
+    String id = ctx.pathParams['id'];
+    final ServerUser user = ctx.getVariable<ServerUser>();
+
     final db = await pool(ctx);
-    final accessor = PlayerAccessor(db);
-    Map map = await accessor.get(plId);
-    if (map == null) throw programByIdNotFound(plId);
-    Player pg = Player.fromMap(map);
-    if (!pg.hasWriteAccess(userId)) throw doNotHaveWriteAccess(plId);
-    await accessor.delete(plId);
-    return accessor.getByUser(userId);
+    final accessor = ChannelAccessor(db);
+
+    Channel ch = await accessor.get(id);
+    if (ch == null) {
+      ctx.response = Response(resourceNotFound, statusCode: 401);
+      return null;
+    }
+    if (!ch.hasWriteAccess(user.id)) {
+      ctx.response = Response(noWriteAccess, statusCode: 401);
+      return null;
+    }
+
+    await accessor.delete(id);
   }
 
-  get(Context ctx) {
-    // TODO
+  @Get(path: '/:id')
+  Future<Channel> get(Context ctx) async {
+    String id = ctx.pathParams['id'];
+    final ServerUser user = ctx.getVariable<ServerUser>();
+
+    final db = await pool(ctx);
+    final accessor = ChannelAccessor(db);
+
+    // Check if the user has read access
+    Channel info = await accessor.get(id);
+    if (info == null) {
+      ctx.response = Response(resourceNotFound, statusCode: 401);
+      return null;
+    }
+    if (!info.hasReadAccess(user.id)) {
+      ctx.response = Response(noReadAccess, statusCode: 401);
+      return null;
+    }
+
+    return info;
   }
 
   getAll(Context ctx) {
     // TODO
   }
 
-  duplicate(Context ctx) {
-    // TODO
+  @PostJson(path: '/duplicate/:id')
+  Future<Channel> duplicate(Context ctx) async {
+    String id = ctx.pathParams['id'];
+    final ServerUser user = ctx.getVariable<ServerUser>();
+
+    final db = await pool(ctx);
+    final accessor = ChannelAccessor(db);
+
+    // Check if the user has read access
+    Channel info = await accessor.get(id);
+    if (info == null) {
+      ctx.response = Response(resourceNotFound, statusCode: 401);
+      return null;
+    }
+    if (!info.hasReadAccess(user.id)) {
+      ctx.response = Response(noReadAccess, statusCode: 401);
+      return null;
+    }
+
+    String newId = await accessor.duplicate(info);
+
+    return accessor.get(newId);
   }
 
   getRunning(Context ctx) {
@@ -53,7 +103,7 @@ class PlayerRoutes extends Controller {
 
   @override
   Future<void> before(Context ctx) async {
-    // TODO
+    await mgoPool(ctx);
+    await Authorizer.authorize<ServerUser>(ctx);
   }
 }
-*/

@@ -35,11 +35,11 @@ class ProgramRoutes extends Controller {
     // Check if the current user has write access
     ProgramInfo info = await accessor.getInfo(id);
     if (info == null) {
-      ctx.response = Response(programNotFound, statusCode: 401);
+      ctx.response = Response(resourceNotFound, statusCode: 401);
       return null;
     }
     if (!info.hasWriteAccess(user.id)) {
-      ctx.response = Response(programNoWriteAccess, statusCode: 401);
+      ctx.response = Response(noWriteAccess, statusCode: 401);
       return null;
     }
 
@@ -62,11 +62,11 @@ class ProgramRoutes extends Controller {
     // Check if the user has read access
     ProgramInfo info = await accessor.getInfo(id);
     if (info == null) {
-      ctx.response = Response(programNotFound, statusCode: 401);
+      ctx.response = Response(resourceNotFound, statusCode: 401);
       return null;
     }
     if (!info.hasReadAccess(user.id)) {
-      ctx.response = Response(programNoReadAccess, statusCode: 401);
+      ctx.response = Response(noReadAccess, statusCode: 401);
       return null;
     }
 
@@ -85,11 +85,11 @@ class ProgramRoutes extends Controller {
     // Check if the current user has write access
     ProgramInfo info = await accessor.getInfo(id);
     if (info == null) {
-      ctx.response = Response(programNotFound, statusCode: 401);
+      ctx.response = Response(resourceNotFound, statusCode: 401);
       return null;
     }
     if (!info.hasWriteAccess(user.id)) {
-      ctx.response = Response(programNoWriteAccess, statusCode: 401);
+      ctx.response = Response(noWriteAccess, statusCode: 401);
       return null;
     }
 
@@ -140,7 +140,7 @@ class ProgramRoutes extends Controller {
 
     ProgramInfo info = await accessor.getInfo(id);
     if (info.owner != user.id) {
-      ctx.response = Response(programNotOwner, statusCode: 401);
+      ctx.response = Response(notOwner, statusCode: 401);
       return null;
     }
 
@@ -172,11 +172,11 @@ class ProgramRoutes extends Controller {
     // Check if the user has read access
     ProgramInfo info = await accessor.getInfo(id);
     if (info == null) {
-      ctx.response = Response(programNotFound, statusCode: 401);
+      ctx.response = Response(resourceNotFound, statusCode: 401);
       return null;
     }
     if (!info.hasReadAccess(user.id)) {
-      ctx.response = Response(programNoReadAccess, statusCode: 401);
+      ctx.response = Response(noReadAccess, statusCode: 401);
       return null;
     }
 
@@ -208,4 +208,10 @@ class ProgramRoutes extends Controller {
     return accessor.get(progId);
   }
   */
+
+  @override
+  Future<void> before(Context ctx) async {
+    await mgoPool(ctx);
+    await Authorizer.authorize<ServerUser>(ctx);
+  }
 }

@@ -10,7 +10,6 @@ class ProgramAccessor {
   Future<String> create(ProgramCreator model, String owner) async {
     final id = ObjectId();
     final idStr = id.toString();
-    // TODO owner
     final query = ProgramCreator.serializer.toMap(model)
       ..addAll({"_id": id, "id": idStr, "owner": owner});
     await col.insert(query);
@@ -60,7 +59,7 @@ class ProgramAccessor {
   Future<Map> setPublish(String id, Map data) => col.update(
       where.id(ObjectId.fromHexString(id)), modify.set('published', data));
 
-  Future delete(String id) async {
+  Future<void> delete(String id) async {
     await col.remove(where.id(ObjectId.fromHexString(id)));
   }
 }
