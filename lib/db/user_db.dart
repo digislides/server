@@ -30,4 +30,10 @@ class UserAccessor {
         .findOne(where.id(ObjectId.fromHexString(id)))
         .then(ServerUser.serializer.fromMap);
   }
+
+  Future<ServerUser> getByEmail(String email) {
+    return col
+        .findOne(where.eq("email", email))
+        .then(ServerUser.serializer.fromMap);
+  }
 }
