@@ -1,6 +1,6 @@
 part of 'api.dart';
 
-@GenController(path: '/channel')
+@GenController(path: '/api/channel')
 class ChannelRoutes extends Controller {
   /// Route to create a new player
   @PostJson()

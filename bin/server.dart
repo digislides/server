@@ -2,20 +2,11 @@ import 'package:jaguar/jaguar.dart';
 import 'package:jaguar_reflect/jaguar_reflect.dart';
 import 'package:jaguar_dev_proxy/jaguar_dev_proxy.dart';
 
-import 'package:jaguar_serializer/jaguar_serializer.dart';
 import 'package:common/serializer/serializer.dart';
 
 import 'package:server/api/api.dart';
 import 'package:server/api/auth.dart';
 import 'package:server/models/models.dart' show ServerUser;
-
-final repo = JsonRepo(serializers: [
-  SignupSerializer(),
-  ProgramCreatorSerializer(),
-  ProgramSerializer(),
-  ChannelCreatorSerializer(),
-  ChannelSerializer(),
-]);
 
 void main(List<String> args) async {
   final server = Jaguar(port: 10000);

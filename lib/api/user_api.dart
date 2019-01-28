@@ -1,6 +1,6 @@
 part of 'api.dart';
 
-@GenController(path: '/auth')
+@GenController(path: '/api/auth')
 class AuthApi extends Controller {
   /// Signup route
   @Post(path: '/signup')
@@ -31,7 +31,7 @@ class AuthApi extends Controller {
   }
 }
 
-@GenController(path: '/user')
+@GenController(path: '/api/user')
 class UserApi extends Controller {
   /// Route to read current logged in user info
   @GetJson()

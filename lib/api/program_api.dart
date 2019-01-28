@@ -1,7 +1,7 @@
 part of 'api.dart';
 
 /// Controller to interact with Programs
-@GenController(path: '/program')
+@GenController(path: '/api/program')
 class ProgramRoutes extends Controller {
   /// Route to create a new program
   @PostJson()
