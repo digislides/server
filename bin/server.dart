@@ -10,9 +10,11 @@ import 'package:server/api/auth.dart';
 import 'package:server/models/models.dart' show ServerUser;
 
 final repo = JsonRepo(serializers: [
-  ChannelCreatorSerializer(),
   SignupSerializer(),
-  ProgramCreatorSerializer()
+  ProgramCreatorSerializer(),
+  ProgramSerializer(),
+  ChannelCreatorSerializer(),
+  ChannelSerializer(),
 ]);
 
 void main(List<String> args) async {

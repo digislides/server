@@ -20,7 +20,3 @@ final pwdHasher =
     Sha256Hasher("sdfsd324324324egdsgsdfgdfty245345dsdgfr456456546");
 
 final mgoPool = MongoPool("mongodb://localhost:27018/echannel");
-
-doNotHaveReadAccess(String id) => Exception();
-
-doNotHaveWriteAccess(String id) => Exception();

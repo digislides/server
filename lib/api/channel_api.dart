@@ -17,9 +17,6 @@ class ChannelRoutes extends Controller {
   @PostJson(path: '/duplicate/:id')
   Future<Channel> duplicate(
       Context ctx, Db db, String id, ServerUser user) async {
-    String id = ctx.pathParams['id'];
-    final ServerUser user = ctx.getVariable<ServerUser>();
-
     final accessor = ChannelAccessor(db);
 
     // Check if the user has read access
