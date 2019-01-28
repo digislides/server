@@ -7,6 +7,8 @@ class AuthApi extends Controller {
   Future<void> signup(Context ctx, Signup data, Db db) async {
     // TODO data.validate();
 
+    // TODO check that user with email and username does not exist
+
     // Hash password
     data.password = pwdHasher.hash(data.password);
 
