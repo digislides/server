@@ -4,16 +4,13 @@ part of 'api.dart';
 class AuthApi extends Controller {
   /// Signup route
   @Post(path: '/signup')
-  Future<void> signup(Context ctx) async {
-    // Read body from request
-    Signup data = await ctx.bodyAsJson(convert: Signup.serializer.fromMap);
-    data.validate(); // TODO
+  Future<void> signup(Context ctx, Signup data, Db db) async {
+    // TODO data.validate();
 
     // Hash password
     data.password = pwdHasher.hash(data.password);
 
     // Open Db connection
-    final db = ctx.getVariable<Db>();
     final accessor = UserAccessor(db);
 
     // Create user
@@ -26,29 +23,25 @@ class AuthApi extends Controller {
     await JsonAuth.authenticate(ctx, hasher: pwdHasher);
   }
 
+  // TODO logout
+
   @override
   Future<void> before(Context ctx) async {
     await mgoPool(ctx);
   }
-
-  // TODO logout
 }
 
 @GenController(path: '/user')
 class UserApi extends Controller {
   /// Route to read current logged in user info
   @GetJson()
-  Future<User> get(Context ctx) async {
-    return ctx.getVariable<ServerUser>();
-  }
+  Future<User> get(ServerUser user) async => user;
 
   /// Route to change password
   @Put(path: '/pwd')
-  Future<void> changePassword(Context ctx) async {
-    final user = ctx.getVariable<ServerUser>();
+  Future<void> changePassword(Context ctx, ServerUser user, Db db) async {
     String pwd = await ctx.bodyAsText();
     pwd = pwdHasher.hash(pwd);
-    final db = ctx.getVariable<Db>();
     final accessor = UserAccessor(db);
     await accessor.changePwd(user.id, pwd);
   }

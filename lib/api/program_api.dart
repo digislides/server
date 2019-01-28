@@ -5,13 +5,9 @@ part of 'api.dart';
 class ProgramRoutes extends Controller {
   /// Route to create a new program
   @PostJson()
-  Future<Map> create(Context ctx) async {
-    final data = await ctx.bodyAsJson(
-        convert: ProgramCreatorSerializer.serializer.fromMap);
-    final ServerUser user = ctx.getVariable<ServerUser>();
-
+  Future<Map> create(
+      Context ctx, Db db, ProgramCreator data, ServerUser user) async {
     // Establish database connection
-    final db = await pool(ctx);
     final accessor = ProgramAccessor(db);
 
     // Create the program
@@ -23,13 +19,8 @@ class ProgramRoutes extends Controller {
 
   /// Route to save a program
   @PutJson(path: '/:id')
-  Future<Map> save(Context ctx) async {
-    String id = ctx.pathParams['id'];
-    final ServerUser user = ctx.getVariable<ServerUser>();
-
-    final data = await ctx.bodyAsJsonMap();
-
-    final db = await pool(ctx);
+  Future<Map> save(
+      Context ctx, Db db, String id, ServerUser user, Map data) async {
     final accessor = ProgramAccessor(db);
 
     // Check if the current user has write access
@@ -52,11 +43,7 @@ class ProgramRoutes extends Controller {
 
   /// Route to get a program by id
   @GetJson(path: '/:id')
-  Future<Map> getById(Context ctx) async {
-    String id = ctx.pathParams['id'];
-    final ServerUser user = ctx.getVariable<ServerUser>();
-
-    final db = await pool(ctx);
+  Future<Map> getById(Context ctx, Db db, String id, ServerUser user) async {
     final accessor = ProgramAccessor(db);
 
     // Check if the user has read access
@@ -75,11 +62,7 @@ class ProgramRoutes extends Controller {
 
   /// Route to delete a program by id
   @DeleteJson(path: '/:id')
-  Future<void> delete(Context ctx) async {
-    String id = ctx.pathParams['id'];
-    final ServerUser user = ctx.getVariable<ServerUser>();
-
-    final db = await pool(ctx);
+  Future<void> delete(Context ctx, Db db, String id, ServerUser user) async {
     final accessor = ProgramAccessor(db);
 
     // Check if the current user has write access
@@ -130,12 +113,8 @@ class ProgramRoutes extends Controller {
 
   /// Transfer ownership
   @Post(path: '/ownership/:id/:newOwnerId')
-  Future<void> transferOwnership(Context ctx) async {
-    String id = ctx.pathParams['id'];
-    String newOwnerId = ctx.pathParams['newOwnerId'];
-    final ServerUser user = ctx.getVariable<ServerUser>();
-
-    final db = await pool(ctx);
+  Future<void> transferOwnership(
+      Context ctx, Db db, String id, String newOwnerId, ServerUser user) async {
     final accessor = ProgramAccessor(db);
 
     ProgramInfo info = await accessor.getInfo(id);
@@ -151,10 +130,7 @@ class ProgramRoutes extends Controller {
   }
 
   @GetJson()
-  Future<List<Map>> getAll(Context ctx) async {
-    final ServerUser user = ctx.getVariable<ServerUser>();
-
-    final db = await pool(ctx);
+  Future<List<Map>> getAll(Context ctx, Db db, ServerUser user) async {
     final accessor = ProgramAccessor(db);
 
     // TODO
@@ -162,11 +138,7 @@ class ProgramRoutes extends Controller {
 
   /// Route to duplicate a program
   @PostJson(path: '/duplicate/:id')
-  Future<Map> duplicate(Context ctx) async {
-    String id = ctx.pathParams['id'];
-    final ServerUser user = ctx.getVariable<ServerUser>();
-
-    final db = await pool(ctx);
+  Future<Map> duplicate(Context ctx, Db db, String id, ServerUser user) async {
     final accessor = ProgramAccessor(db);
 
     // Check if the user has read access
@@ -189,10 +161,9 @@ class ProgramRoutes extends Controller {
 
   /* TODO
   @PostJson(path: '/publish/:id')
-  Future<Map> publish(Context ctx) async {
+  Future<Map> publish(Context ctx, Db db) async {
     String userId = getUserId(ctx);
     String progId = ctx.pathParams['id'];
-    final db = await pool(ctx);
     final accessor = ProgramAccessor(db);
     Map map = await accessor.get(progId);
     if (map == null) throw programByIdNotFound(progId);

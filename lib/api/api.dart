@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:jaguar/jaguar.dart';
+import 'package:jaguar/bind.dart';
 import 'package:jaguar_mongo/jaguar_mongo.dart';
 import 'package:mongo_dart/mongo_dart.dart';
 import 'package:jaguar_auth/jaguar_auth.dart';
@@ -14,8 +15,6 @@ import 'package:server/db/db.dart';
 part 'channel_api.dart';
 part 'program_api.dart';
 part 'user_api.dart';
-
-final pool = MongoPool('mongodb://localhost:27017/digislides');
 
 final pwdHasher =
     Sha256Hasher("sdfsd324324324egdsgsdfgdfty245345dsdgfr456456546");
