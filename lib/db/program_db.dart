@@ -1,5 +1,11 @@
 part of 'db.dart';
 
+Map removeId(Map map) {
+  if (map == null) return null;
+  map.remove("_id");
+  return map;
+}
+
 class ProgramAccessor {
   Db db;
 
@@ -7,11 +13,11 @@ class ProgramAccessor {
 
   DbCollection get col => db.collection('p');
 
-  Future<String> create(ProgramCreator model, String owner) async {
+  Future<String> create(Program model) async {
     final id = ObjectId();
-    final idStr = id.toString();
-    final query = ProgramCreator.serializer.toMap(model)
-      ..addAll({"_id": id, "id": idStr, "owner": owner});
+    final idStr = id.toHexString();
+    final query = Program.serializer.toMap(model)
+      ..addAll({"_id": id, "id": idStr});
     await col.insert(query);
     return idStr;
   }
@@ -26,7 +32,7 @@ class ProgramAccessor {
   }
 
   Future<Map> get(String id) {
-    return col.findOne(where.id(ObjectId.fromHexString(id)));
+    return col.findOne(where.id(ObjectId.fromHexString(id))).then(removeId);
   }
 
   Future<ProgramInfo> getInfo(String id) {
@@ -37,12 +43,17 @@ class ProgramAccessor {
         .then(ProgramInfo.serializer.fromMap);
   }
 
-  Future<List<Map>> getByUser(String user) {
-    SelectorBuilder b = where
-        .eq('owner', user)
-        .or(where.oneFrom('writers', [user]))
-        .or(where.oneFrom('readers', [user]));
-    return col.find(b).toList();
+  Future<List<Map>> getByUser(String user, {String search: ''}) {
+    final b = where.eq('owner', user);
+    // TODO also fetch records with write and read access
+    // Name search
+    if (search != null && search.isNotEmpty) {
+      if (!search.contains("^\$")) {
+        search = ".*$search.*";
+      }
+      b.eq("name", {"\$regex": search});
+    }
+    return col.find(b).map(removeId).toList();
   }
 
   Future<void> save(String id, Map data) async {
@@ -56,7 +67,7 @@ class ProgramAccessor {
     // TODO
   }
 
-  Future<Map> setPublish(String id, Map data) => col.update(
+  Future<void> setPublish(String id, Map data) => col.update(
       where.id(ObjectId.fromHexString(id)), modify.set('published', data));
 
   Future<void> delete(String id) async {

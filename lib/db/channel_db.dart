@@ -9,7 +9,7 @@ class ChannelAccessor {
 
   Future<String> create(ChannelCreator model, String owner) async {
     final id = ObjectId();
-    final idStr = id.toString();
+    final idStr = id.toHexString();
     final query = ChannelCreator.serializer.toMap(model)
       ..addAll({"_id": id, "id": idStr, "owner": owner});
     await col.insert(query);

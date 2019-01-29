@@ -7,11 +7,19 @@ class ProgramRoutes extends Controller {
   @PostJson()
   Future<Map> create(
       Context ctx, Db db, ProgramCreator data, ServerUser user) async {
+    // TODO validate
+
     // Establish database connection
     final accessor = ProgramAccessor(db);
 
+    final program = Program(
+        name: data.name,
+        owner: user.id,
+        members: {},
+        design: ProgramDesign(width: data.width, height: data.height));
+
     // Create the program
-    final progId = await accessor.create(data, user.id);
+    final progId = await accessor.create(program);
 
     // Fetch the program
     return accessor.get(progId);
@@ -130,10 +138,19 @@ class ProgramRoutes extends Controller {
   }
 
   @GetJson()
-  Future<List<Map>> getAll(Context ctx, Db db, ServerUser user) async {
+  Future<List<Map>> getRecent(Context ctx, Db db, ServerUser user) async {
     final accessor = ProgramAccessor(db);
 
     // TODO
+  }
+
+  @GetJson()
+  Future<List<Map>> getAll(Context ctx, Db db, ServerUser user) async {
+    final accessor = ProgramAccessor(db);
+
+    // TODO implement pagination
+
+    return accessor.getByUser(user.id, search: ctx.query['search']);
   }
 
   /// Route to duplicate a program
