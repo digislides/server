@@ -37,9 +37,7 @@ class ProgramAccessor {
 
   Future<ProgramInfo> getInfo(String id) {
     return col
-        .findOne(where
-            .id(ObjectId.fromHexString(id))
-            .fields(["id"]).excludeFields(['design']))
+        .findOne(where.id(ObjectId.fromHexString(id)).excludeFields(['design']))
         .then(ProgramInfo.serializer.fromMap);
   }
 
