@@ -9,7 +9,7 @@ class UserAccessor {
 
   Future<String> create(Signup model) async {
     final id = ObjectId();
-    final idStr = id.toString();
+    final idStr = id.toHexString();
     final map = model.toJson();
     map;
     map.addAll({

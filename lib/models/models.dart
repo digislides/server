@@ -3,8 +3,8 @@ import 'package:common/models.dart';
 
 import 'package:server/serializer/serializer.dart';
 
-class ServerUser extends User implements AuthorizationUser {
-  String pwdHash;
+class ServerUser extends User implements AuthorizationUser, PasswordUser {
+  String password;
 
   String get authorizationId => id;
 

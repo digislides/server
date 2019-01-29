@@ -16,13 +16,13 @@ class AuthApi extends Controller {
     final accessor = UserAccessor(db);
 
     // Create user
-    await accessor.create(data);
+    String userId = await accessor.create(data);
   }
 
   /// Login route
   @Post(path: '/login')
   Future<void> login(Context ctx) async {
-    await JsonAuth.authenticate(ctx, hasher: pwdHasher);
+    await JsonAuth.authenticate<ServerUser>(ctx, hasher: pwdHasher);
   }
 
   // TODO logout

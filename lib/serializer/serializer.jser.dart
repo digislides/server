@@ -11,7 +11,7 @@ abstract class _$ServerUserSerializer implements Serializer<ServerUser> {
   Map<String, dynamic> toMap(ServerUser model) {
     if (model == null) return null;
     Map<String, dynamic> ret = <String, dynamic>{};
-    setMapValue(ret, 'pwdHash', model.pwdHash);
+    setMapValue(ret, 'password', model.password);
     setMapValue(ret, 'authorizationId', model.authorizationId);
     setMapValue(ret, 'id', model.id);
     setMapValue(ret, 'email', model.email);
@@ -23,7 +23,7 @@ abstract class _$ServerUserSerializer implements Serializer<ServerUser> {
   ServerUser fromMap(Map map) {
     if (map == null) return null;
     final obj = new ServerUser();
-    obj.pwdHash = map['pwdHash'] as String;
+    obj.password = map['password'] as String;
     obj.id = map['id'] as String;
     obj.email = map['email'] as String;
     obj.name = map['name'] as String;
