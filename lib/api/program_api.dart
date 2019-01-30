@@ -176,26 +176,34 @@ class ProgramRoutes extends Controller {
     return accessor.get(newId);
   }
 
-  /* TODO
   @PostJson(path: '/publish/:id')
-  Future<Map> publish(Context ctx, Db db) async {
-    String userId = getUserId(ctx);
-    String progId = ctx.pathParams['id'];
+  Future<Map> publish(
+      Context ctx, Db db, String id, ServerUser user, Map data) async {
     final accessor = ProgramAccessor(db);
-    Map map = await accessor.get(progId);
-    if (map == null) throw programByIdNotFound(progId);
-    Program pg = Program.fromMap(map);
-    if (!pg.hasWriteAccess(userId)) throw doNotHaveWriteAccess(progId);
-    map.remove('name');
-    map.remove('owner');
-    map.remove('writers');
-    map.remove('readers');
-    map.remove('published');
-    map['on'] = DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000;
-    await accessor.setPublish(progId, map);
-    return accessor.get(progId);
+
+    // Check if the current user has write access
+    ProgramInfo info = await accessor.getInfo(id);
+    if (info == null) {
+      ctx.response = Response(resourceNotFound, statusCode: 401);
+      return null;
+    }
+    if (!info.hasWriteAccess(user.id)) {
+      ctx.response = Response(noWriteAccess, statusCode: 401);
+      return null;
+    }
+
+    // Save
+    if (data != null) {
+      await accessor.save(id, data);
+    }
+
+    final saved = await accessor.get(id);
+
+    await accessor.setPublish(id, saved["design"]);
+
+    // Fetch the program
+    return accessor.get(id);
   }
-  */
 
   @override
   Future<void> before(Context ctx) async {
