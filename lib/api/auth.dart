@@ -6,10 +6,14 @@ import 'package:server/db/db.dart';
 
 class AuthFetcher implements UserFetcher<ServerUser> {
   @override
-  Future<ServerUser> byAuthenticationId(Context ctx, String authenticationId) {
+  Future<ServerUser> byAuthenticationId(Context ctx, String authenticationId) async {
     final db = ctx.getVariable<Db>();
     final accessor = UserAccessor(db);
-    return accessor.getByEmail(authenticationId);
+    ServerUser user = await accessor.getByEmail(authenticationId);
+    if(user != null) {
+      return user;
+    }
+    return accessor.getByName(authenticationId);
   }
 
   @override

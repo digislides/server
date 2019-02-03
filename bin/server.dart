@@ -31,7 +31,7 @@ void main(List<String> args) async {
   server.add(reflect(ProgramRoutes()));
   server.add(reflect(ChannelRoutes()));
 
-  // server.addRoute(getOnlyProxy('', 'http://localhost:9000/'));
+  server.addRoute(getOnlyProxy('/*', 'http://localhost:9000/'));
 
   await server.serve(logRequests: true);
 }
