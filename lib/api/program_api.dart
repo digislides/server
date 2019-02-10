@@ -16,7 +16,17 @@ class ProgramRoutes extends Controller {
         name: data.name,
         owner: user.id,
         members: {},
-        design: ProgramDesign(width: data.width, height: data.height));
+        design: ProgramDesign(width: data.width, height: data.height, frames: [
+          Frame(
+              id: newId,
+              name: 'Main frame',
+              fullview: true,
+              left: 0,
+              top: 0,
+              pages: [],
+              width: data.width,
+              height: data.height),
+        ]));
 
     // Create the program
     final progId = await accessor.create(program);
@@ -207,7 +217,7 @@ class ProgramRoutes extends Controller {
 
   @override
   Future<void> before(Context ctx) async {
-    await mgoPool(ctx);
+    await mgoPool.call(ctx);
     await Authorizer.authorize<ServerUser>(ctx);
   }
 }

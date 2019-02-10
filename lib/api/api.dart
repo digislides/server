@@ -12,6 +12,8 @@ import 'package:server/models/models.dart';
 
 import 'package:server/db/db.dart';
 
+import 'package:common/utils/id.dart';
+
 part 'channel_api.dart';
 part 'program_api.dart';
 part 'user_api.dart';
