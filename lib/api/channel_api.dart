@@ -86,6 +86,21 @@ class ChannelRoutes extends Controller {
     // TODO
   }
 
+  @Get(path: '/version/:id')
+  Future<Map> getVersion(Context ctx, String id, Db db, ServerUser user) async {
+    final accessor = ChannelAccessor(db);
+    final programAccessor = ProgramAccessor(db);
+
+    Channel info = await accessor.get(id);
+    if(info == null) {
+      // TODO
+      return null;
+    }
+
+    final prog = programAccessor.get(info.program);
+    // TODO
+  }
+
   @override
   Future<void> before(Context ctx) async {
     await mgoPool(ctx);
