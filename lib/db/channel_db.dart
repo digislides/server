@@ -31,12 +31,24 @@ class ChannelAccessor {
         .then(Channel.serializer.fromMap);
   }
 
-  Future<void> save(String id, Map data) {
-    // TODO
-    col.update(where.id(ObjectId.fromHexString(id)), data);
+  Future<void> save(String id, ChannelCreator data) async {
+    await col.update(where.id(ObjectId.fromHexString(id)), data.toJson());
   }
 
-  Future delete(String id) async {
+  Future<void> delete(String id) async {
     await col.remove(where.id(ObjectId.fromHexString(id)));
+  }
+
+  Future<List<Channel>> getByUser(String user, {String search: ''}) {
+    final b = where.eq('owner', user);
+    // TODO also fetch records with write and read access
+    // Name search
+    if (search != null && search.isNotEmpty) {
+      if (!search.contains("^\$")) {
+        search = ".*$search.*";
+      }
+      b.eq("name", {"\$regex": search});
+    }
+    return col.find(b).map(removeId).map(Channel.serializer.fromMap).toList();
   }
 }

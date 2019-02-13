@@ -215,6 +215,12 @@ class ProgramRoutes extends Controller {
     return accessor.get(id);
   }
 
+  /// API to return channels this the requested program is running on
+  @GetJson(path: '/:id/runningon')
+  Future<List<Channel>> getRunningOn(Context ctx) async {
+    // TODO
+  }
+
   @override
   Future<void> before(Context ctx) async {
     await mgoPool.call(ctx);

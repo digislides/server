@@ -8,6 +8,8 @@ part 'serializer.jser.dart';
 class ServerUserSerializer extends Serializer<ServerUser>
     with _$ServerUserSerializer {}
 
-@GenSerializer()
+@GenSerializer(
+  fields: {'publishedAt': Field(processor: MillisecondsProcessor())},
+)
 class ProgramInfoSerializer extends Serializer<ProgramInfo>
     with _$ProgramInfoSerializer {}

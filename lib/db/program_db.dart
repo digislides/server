@@ -66,7 +66,10 @@ class ProgramAccessor {
   }
 
   Future<void> setPublish(String id, Map data) => col.update(
-      where.id(ObjectId.fromHexString(id)), modify.set('published', data));
+      where.id(ObjectId.fromHexString(id)),
+      modify
+          .set('published', data)
+          .set('publishedAt', DateTime.now().toUtc().millisecondsSinceEpoch));
 
   Future<void> delete(String id) async {
     await col.remove(where.id(ObjectId.fromHexString(id)));

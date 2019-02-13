@@ -35,9 +35,25 @@ class ChannelRoutes extends Controller {
     return accessor.get(newId);
   }
 
-  @PutJson()
-  Future save(Context ctx) {
-    // TODO
+  @PutJson(path: '/:id')
+  Future<Channel> save(Context ctx, String id, Db db, ServerUser user,
+      ChannelCreator data) async {
+    final accessor = ChannelAccessor(db);
+
+    // Check if the user has read access
+    Channel info = await accessor.get(id);
+    if (info == null) {
+      ctx.response = Response(resourceNotFound, statusCode: 401);
+      return null;
+    }
+    if (!info.hasWriteAccess(user.id)) {
+      ctx.response = Response(noReadAccess, statusCode: 401);
+      return null;
+    }
+
+    await accessor.save(id, data);
+
+    return accessor.get(newId);
   }
 
   /// Route to delete a program by id
@@ -60,7 +76,7 @@ class ChannelRoutes extends Controller {
     await accessor.delete(id);
   }
 
-  @Get(path: '/:id')
+  @GetJson(path: '/:id')
   Future<Channel> get(Context ctx, String id, Db db, ServerUser user) async {
     final accessor = ChannelAccessor(db);
 
@@ -78,27 +94,40 @@ class ChannelRoutes extends Controller {
     return info;
   }
 
-  getAll(Context ctx) {
-    // TODO
+  @GetJson()
+  Future<List<Channel>> getAll(Context ctx, Db db, ServerUser user) {
+    final accessor = ChannelAccessor(db);
+
+    // TODO implement pagination
+
+    return accessor.getByUser(user.id, search: ctx.query['search']);
   }
 
-  getRunning(Context ctx) {
-    // TODO
-  }
+  // TODO transfer ownership
 
-  @Get(path: '/version/:id')
-  Future<Map> getVersion(Context ctx, String id, Db db, ServerUser user) async {
+  @GetJson(path: '/version/:id')
+  Future<int> getVersion(Context ctx, String id, Db db, ServerUser user) async {
     final accessor = ChannelAccessor(db);
     final programAccessor = ProgramAccessor(db);
 
     Channel info = await accessor.get(id);
-    if(info == null) {
+    if (info == null) {
       // TODO
       return null;
     }
 
-    final prog = programAccessor.get(info.program);
-    // TODO
+    final prog = await programAccessor.getInfo(info.program);
+    if (prog == null) {
+      // TODO
+      return null;
+    }
+
+    if (prog.publishedAt == null) {
+      // TODO
+      return 0;
+    }
+
+    return prog.publishedAt.toUtc().millisecondsSinceEpoch;
   }
 
   @override

@@ -20,5 +20,7 @@ class ProgramInfo extends HasAccess {
 
   Map<String, int> members;
 
+  DateTime publishedAt;
+
   static final serializer = ProgramInfoSerializer();
 }
