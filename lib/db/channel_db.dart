@@ -31,6 +31,12 @@ class ChannelAccessor {
         .then(Channel.serializer.fromMap);
   }
 
+  Future<List<Channel>> getByProgramsId(String programId) {
+    return col
+        .find(where.eq("program", programId))
+        .map(Channel.serializer.fromMap).toList();
+  }
+
   Future<void> save(String id, ChannelCreator data) async {
     await col.update(where.id(ObjectId.fromHexString(id)), data.toJson());
   }
