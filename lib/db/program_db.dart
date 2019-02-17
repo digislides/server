@@ -59,6 +59,11 @@ class ProgramAccessor {
         where.id(ObjectId.fromHexString(id)), modify.set("design", data));
   }
 
+  Future<void> setName(String id, String name) async {
+    await col.update(
+        where.id(ObjectId.fromHexString(id)), modify.set('name', name));
+  }
+
   Future<void> setOwner(String id, String owner) async {
     await col.update(
         where.id(ObjectId.fromHexString(id)), modify.set('owner', owner));

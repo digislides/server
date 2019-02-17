@@ -53,7 +53,7 @@ class ChannelRoutes extends Controller {
 
     await accessor.save(id, data);
 
-    return accessor.get(newId);
+    return accessor.get(id);
   }
 
   /// Route to delete a program by id

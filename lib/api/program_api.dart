@@ -97,37 +97,27 @@ class ProgramRoutes extends Controller {
     await accessor.delete(id);
   }
 
-  /* TODO
   /// Route to edit a program
-  @PutJson(path: '/edit/:id')
-  Future<Map> edit(Context ctx) async {
-    String id = ctx.pathParams['id'];
-    final ServerUser user = ctx.getVariable<ServerUser>();
-
-    // Establish connection to database
-    final db = await pool(ctx);
+  @PutJson(path: '/:id/name/:name')
+  Future<Map> setName(Context ctx, Db db, String id, String name,
+      String newOwnerId, ServerUser user) async {
     final accessor = ProgramAccessor(db);
 
     // Check if the current user has write access
     ProgramInfo info = await accessor.getInfo(id);
     if (info == null) {
-      ctx.response = Response(programNotFound, statusCode: 401);
+      ctx.response = Response(resourceNotFound, statusCode: 401);
       return null;
     }
-    if(!info.hasWriteAccess(user.id)) {
-      ctx.response = Response(programNoWriteAccess, statusCode: 401);
+    if (!info.hasWriteAccess(user.id)) {
+      ctx.response = Response(noWriteAccess, statusCode: 401);
       return null;
     }
 
-    /* TODO
-    Map data = await ctx.req.bodyAsJsonMap();
-    await accessor.edit(progId, data['name'], data['width'], data['height'],
-        data['writers'], data['readers']);
-    */
+    await accessor.setName(id, name);
 
     return accessor.get(id);
   }
-  */
 
   /// Transfer ownership
   @Post(path: '/ownership/:id/:newOwnerId')
@@ -164,7 +154,7 @@ class ProgramRoutes extends Controller {
   }
 
   /// Route to duplicate a program
-  @PostJson(path: '/duplicate/:id')
+  @PostJson(path: '/:id/duplicate')
   Future<Map> duplicate(Context ctx, Db db, String id, ServerUser user) async {
     final accessor = ProgramAccessor(db);
 
@@ -186,7 +176,7 @@ class ProgramRoutes extends Controller {
     return accessor.get(newId);
   }
 
-  @PostJson(path: '/publish/:id')
+  @PostJson(path: '/:id/publish')
   Future<Map> publish(
       Context ctx, Db db, String id, ServerUser user, Map data) async {
     final accessor = ProgramAccessor(db);
