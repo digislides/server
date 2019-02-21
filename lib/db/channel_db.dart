@@ -38,7 +38,12 @@ class ChannelAccessor {
   }
 
   Future<void> save(String id, ChannelCreator data) async {
-    await col.update(where.id(ObjectId.fromHexString(id)), data.toJson());
+    final m = modify;
+    final v = data.toJson();
+    for (String key in v.keys) {
+      m.set(key, v[key]);
+    }
+    await col.update(where.id(ObjectId.fromHexString(id)), m);
   }
 
   Future<void> delete(String id) async {
