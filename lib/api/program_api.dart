@@ -20,7 +20,6 @@ class ProgramRoutes extends Controller {
           Frame(
               id: newId,
               name: 'Main frame',
-              fullview: true,
               left: 0,
               top: 0,
               pages: [],
