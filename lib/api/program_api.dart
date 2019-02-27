@@ -204,6 +204,24 @@ class ProgramRoutes extends Controller {
     return accessor.get(id);
   }
 
+  @GetJson(path: '/:id/published')
+  Future<Map> getPublished(Context ctx, Db db, String id, ServerUser user) async {
+    final accessor = ProgramAccessor(db);
+
+    // Check if the user has read access
+    ProgramInfo info = await accessor.getInfo(id);
+    if (info == null) {
+      ctx.response = Response(resourceNotFound, statusCode: 401);
+      return null;
+    }
+    if (!info.hasReadAccess(user.id)) {
+      ctx.response = Response(noReadAccess, statusCode: 401);
+      return null;
+    }
+
+    // TODO
+  }
+
   /// API to return channels this the requested program is running on
   @GetJson(path: '/:id/runningon')
   Future<List<ChannelPublic>> getRunningOn(Context ctx, Db db, String id, ServerUser user, Map data) async {
