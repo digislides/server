@@ -7,8 +7,10 @@ import 'package:jaguar_auth/jaguar_auth.dart';
 
 import 'package:common/common.dart';
 import 'package:common/error_codes.dart';
-import 'package:common/serializer/serializer.dart';
 import 'package:server/models/models.dart';
+
+import 'package:jaguar_eventsource/jaguar_eventsource.dart';
+import 'package:simple_pubsub/simple_pubsub.dart';
 
 import 'package:server/db/db.dart';
 
@@ -22,3 +24,5 @@ final pwdHasher =
     Sha256Hasher("sdfsd324324324egdsgsdfgdfty245345dsdgfr456456546");
 
 final mgoPool = MongoPool("mongodb://localhost:27018/echannel");
+
+final playerRT = PubSub<Event>();

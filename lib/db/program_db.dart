@@ -37,7 +37,9 @@ class ProgramAccessor {
 
   Future<ProgramInfo> getInfo(String id) {
     return col
-        .findOne(where.id(ObjectId.fromHexString(id)).excludeFields(['design']))
+        .findOne(where
+            .id(ObjectId.fromHexString(id))
+            .excludeFields(['design', 'published']))
         .then(ProgramInfo.serializer.fromMap);
   }
 
@@ -70,11 +72,13 @@ class ProgramAccessor {
     // TODO
   }
 
-  Future<void> setPublish(String id, Map data) => col.update(
+  Future<void> setPublish(String id, Map data, int at) => col.update(
       where.id(ObjectId.fromHexString(id)),
-      modify
-          .set('published', data)
-          .set('publishedAt', DateTime.now().toUtc().millisecondsSinceEpoch));
+      modify.set('published', data).set('publishedAt', at));
+
+  Future<Map> getPublished(String id) => col.findOne(where
+      .id(ObjectId.fromHexString(id))
+      .fields(['id', 'published', 'publishedAt']));
 
   Future<void> delete(String id) async {
     await col.remove(where.id(ObjectId.fromHexString(id)));

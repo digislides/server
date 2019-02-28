@@ -198,14 +198,23 @@ class ProgramRoutes extends Controller {
 
     final saved = await accessor.get(id);
 
-    await accessor.setPublish(id, saved["design"]);
+    final at = DateTime.now().toUtc().millisecondsSinceEpoch;
+    await accessor.setPublish(id, saved["design"], at);
+
+    final channelAccessor = ChannelAccessor(db);
+    final channels = await channelAccessor.getByProgramsId(id);
+    for (Channel ch in channels) {
+      playerRT.publish(
+          "${ch.id}", Event(data: at.toString(), event: 'publish'));
+    }
 
     // Fetch the program
     return accessor.get(id);
   }
 
   @GetJson(path: '/:id/published')
-  Future<Map> getPublished(Context ctx, Db db, String id, ServerUser user) async {
+  Future<Map> getPublished(
+      Context ctx, Db db, String id, ServerUser user) async {
     final accessor = ProgramAccessor(db);
 
     // Check if the user has read access
@@ -219,12 +228,27 @@ class ProgramRoutes extends Controller {
       return null;
     }
 
-    // TODO
+    final map = await accessor.getPublished(id);
+
+    if (map == null) {
+      ctx.response = Response(resourceNotFound, statusCode: 401);
+      return null;
+    }
+
+    if (map['publishedAt'] == null) {
+      return null;
+    }
+
+    return {
+      'id': '$id:${map['publishedAt']}',
+      'design': map['published'],
+    };
   }
 
   /// API to return channels this the requested program is running on
   @GetJson(path: '/:id/runningon')
-  Future<List<ChannelPublic>> getRunningOn(Context ctx, Db db, String id, ServerUser user, Map data) async {
+  Future<List<ChannelPublic>> getRunningOn(
+      Context ctx, Db db, String id, ServerUser user, Map data) async {
     final accessor = ProgramAccessor(db);
 
     // Check if the user has read access

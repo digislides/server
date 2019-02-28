@@ -34,7 +34,8 @@ class ChannelAccessor {
   Future<List<Channel>> getByProgramsId(String programId) {
     return col
         .find(where.eq("program", programId))
-        .map(Channel.serializer.fromMap).toList();
+        .map(Channel.serializer.fromMap)
+        .toList();
   }
 
   Future<void> save(String id, ChannelCreator data) async {

@@ -17,6 +17,10 @@ dependencies:
   jaguar_dev_proxy:
   common:
     path: ../common
+  jaguar_eventsource:
+    path: ../../jaguar/jaguar/eventsource
+  simple_pubsub:
+    path: ../../pubsub
 
 dev_dependencies:
   jaguar_serializer_cli:
