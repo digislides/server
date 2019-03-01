@@ -205,7 +205,7 @@ class ProgramRoutes extends Controller {
     final channels = await channelAccessor.getByProgramsId(id);
     for (Channel ch in channels) {
       playerRT.publish(
-          "${ch.id}", Event(data: at.toString(), event: 'publish'));
+          "${ch.id}", Event(data: id + ':' + at.toString(), event: 'publish'));
     }
 
     // Fetch the program

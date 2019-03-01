@@ -53,7 +53,10 @@ class ChannelRoutes extends Controller {
 
     await accessor.save(id, data);
 
-    // TODO publish
+    // Send event to player
+    if (info.program != data.program) {
+      playerRT.publish(id, Event(event: 'publish'));
+    }
 
     return accessor.get(id);
   }
