@@ -123,9 +123,7 @@ class ChannelRoutes extends Controller {
       return null;
     }
 
-    if (info.program == null) {
-      return "none";
-    }
+    if (info.program == null) return "none";
 
     final prog = await programAccessor.getInfo(info.program);
     if (prog == null) {
@@ -133,9 +131,7 @@ class ChannelRoutes extends Controller {
       return null;
     }
 
-    if (prog.publishedAt == null) {
-      return "none";
-    }
+    if (prog.publishedAt == null) return "none";
 
     final at = prog.publishedAt.toUtc().millisecondsSinceEpoch;
 
