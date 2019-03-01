@@ -136,11 +136,10 @@ class ProgramRoutes extends Controller {
     await accessor.setOwner(id, newOwnerId);
   }
 
-  @GetJson()
+  @GetJson(path: '/recent')
   Future<List<Map>> getRecent(Context ctx, Db db, ServerUser user) async {
     final accessor = ProgramAccessor(db);
-
-    // TODO
+    return accessor.getRecent(user.id);
   }
 
   @GetJson()

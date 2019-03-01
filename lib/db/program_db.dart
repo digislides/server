@@ -17,7 +17,11 @@ class ProgramAccessor {
     final id = ObjectId();
     final idStr = id.toHexString();
     final query = Program.serializer.toMap(model)
-      ..addAll({"_id": id, "id": idStr});
+      ..addAll({
+        "_id": id,
+        "id": idStr,
+        "savedAt": DateTime.now().toUtc().millisecondsSinceEpoch,
+      });
     await col.insert(query);
     return idStr;
   }
@@ -56,9 +60,19 @@ class ProgramAccessor {
     return col.find(b).map(removeId).toList();
   }
 
+  Future<List<Map>> getRecent(String user) {
+    // TODO also fetch records with write and read access
+    final b =
+        where.eq('owner', user).sortBy("savedAt", descending: true).limit(5);
+    return col.find(b).map(removeId).toList();
+  }
+
   Future<void> save(String id, Map data) async {
     await col.update(
-        where.id(ObjectId.fromHexString(id)), modify.set("design", data));
+        where.id(ObjectId.fromHexString(id)),
+        modify
+            .set("design", data)
+            .set("savedAt", DateTime.now().toUtc().millisecondsSinceEpoch));
   }
 
   Future<void> setName(String id, String name) async {
