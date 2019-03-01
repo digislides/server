@@ -24,14 +24,13 @@ void main(List<String> args) async {
   server.serializers[MimeTypes.json] = repo;
   server.userFetchers[ServerUser] = AuthFetcher();
   server.onException.add(logError);
-  // server.log.onRecord.listen(print);
+  server.log.onRecord.listen(print);
 
   server.add(reflect(AuthApi()));
   server.add(reflect(UserApi()));
   server.add(reflect(ProgramRoutes()));
   server.add(reflect(ChannelRoutes()));
 
-  // server.addRoute(getOnlyProxy('/player/*', 'http://localhost:9005/'));
   server.addRoute(getOnlyProxy('/*', 'http://localhost:9000/'));
 
   await server.serve(logRequests: true);
