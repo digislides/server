@@ -36,7 +36,7 @@ services:
       - echannel
       - web
     volumes:
-      - /home/teja/projects/digislides/server/tools/docker/nginx.conf:/etc/nginx/conf.d/default.conf
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
 volumes:
   data:
 secrets:
