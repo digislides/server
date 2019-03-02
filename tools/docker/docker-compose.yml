@@ -1,0 +1,44 @@
+version: '3.5'
+services:
+  echannel:
+    image: echannel
+    depends_on:
+      - mongo
+    expose:
+      - 80
+    ports:
+      - "127.0.0.1:9000:80"
+    restart: always
+    secrets:
+      - echannel_config
+  web:
+    image: echannel_web
+    expose:
+      - 80
+    ports:
+      - "127.0.0.1:9005:80"
+    restart: always
+  mongo:
+    image: mongo
+    expose:
+      - 27017
+    ports:
+      - "127.0.0.1:27017:27017"
+    volumes:
+      - data:/data/db
+    restart: always
+  nginx:
+    image: nginx
+    ports:
+      - "127.0.0.1:10000:80"
+    restart: always
+    depends_on:
+      - echannel
+      - web
+    volumes:
+      - /home/teja/projects/digislides/server/tools/docker/nginx.conf:/etc/nginx/conf.d/default.conf
+volumes:
+  data:
+secrets:
+  echannel_config:
+    file: echannel_config.yaml

@@ -19,6 +19,8 @@ dependencies:
     path: ../common
   jaguar_eventsource:
   simple_pubsub:
+  jaguar_settings:
+    path: ../../jaguar/jaguar/settings
 
 dev_dependencies:
   jaguar_serializer_cli:

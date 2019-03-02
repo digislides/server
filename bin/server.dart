@@ -6,6 +6,7 @@ import 'package:common/serializer/serializer.dart';
 
 import 'package:server/api/api.dart';
 import 'package:server/api/auth.dart';
+import 'package:server/settings/my_settings.dart' as mys;
 import 'package:server/models/models.dart' show ServerUser;
 
 void logError(Context ctx, Object e, StackTrace t) {
@@ -20,7 +21,9 @@ void logError(Context ctx, Object e, StackTrace t) {
 }
 
 void main(List<String> args) async {
-  final server = Jaguar(port: 10000);
+  await mys.init(args);
+
+  final server = Jaguar(port: mys.config.port);
   server.serializers[MimeTypes.json] = repo;
   server.userFetchers[ServerUser] = AuthFetcher();
   server.onException.add(logError);

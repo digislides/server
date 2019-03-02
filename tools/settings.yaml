@@ -1,0 +1,3 @@
+port: 10005
+mongo: mongodb://localhost:27018/echannel
+pwdSalt: sdfsd324324324egdsgsdfgdfty245345dsdgfr456456546
