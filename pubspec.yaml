@@ -15,11 +15,11 @@ dependencies:
   mongo_dart:
   jaguar_reflect: ^2.4.5
   jaguar_dev_proxy:
-  common:
-    path: ../common
   jaguar_eventsource:
   simple_pubsub:
   jaguar_settings: ^4.0.1
+  common:
+    path: ../common
 
 dev_dependencies:
   jaguar_serializer_cli:
