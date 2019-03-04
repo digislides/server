@@ -63,4 +63,9 @@ class ChannelAccessor {
     }
     return col.find(b).map(removeId).map(Channel.serializer.fromMap).toList();
   }
+
+  Future<void> setRunning(String id, ChannelRunning running) async {
+    await col.update(where.id(ObjectId.fromHexString(id)),
+        modify.set("running", ChannelRunning.serializer.toMap(running)));
+  }
 }

@@ -200,6 +200,27 @@ class ChannelRoutes extends Controller {
     });
   }
 
+  @PutJson(path: '/:id/playing')
+  Future<void> setPlaying(
+      Context ctx, String id, Db db, ServerUser user) async {
+    final accessor = ChannelAccessor(db);
+
+    Channel info = await accessor.get(id);
+    if (info == null) {
+      ctx.response = Response(resourceNotFound, statusCode: 401);
+      return null;
+    }
+    if (!info.hasWriteAccess(user.id)) {
+      ctx.response = Response(noWriteAccess, statusCode: 401);
+      return null;
+    }
+
+    String running = ctx.query['running'];
+
+    await accessor.setRunning(
+        id, ChannelRunning(running: running, when: DateTime.now()));
+  }
+
   @override
   Future<void> before(Context ctx) async {
     await mgoPool(ctx);

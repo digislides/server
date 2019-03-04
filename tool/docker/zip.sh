@@ -6,5 +6,5 @@ cp `which dart` ./
 # Make app snapshot
 dart --snapshot=app.dart.snapshot ../../bin/server.dart
 
-# Build docker image
-docker build --tag echannel .
+# Tar the necessary files
+tar -czvf server.tar.gz dart app.dart.snapshot Dockerfile build.sh
