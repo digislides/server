@@ -14,36 +14,29 @@ class ProgramAccessor {
   DbCollection get col => db.collection('p');
 
   Future<String> create(Program model) async {
-    final id = ObjectId();
-    final idStr = id.toHexString();
+    final id = idGenerator.generateReadable();
     final query = Program.serializer.toMap(model)
       ..addAll({
-        "_id": id,
-        "id": idStr,
+        "id": id,
         "savedAt": DateTime.now().toUtc().millisecondsSinceEpoch,
       });
     await col.insert(query);
-    return idStr;
+    return id;
   }
 
   Future<String> duplicate(Map map) async {
-    final id = ObjectId();
-    final idStr = id.toString();
-    await col.insert(map
-      ..['id'] = idStr
-      ..['_id'] = id);
-    return idStr;
+    final id = idGenerator.generateReadable();
+    await col.insert(map..['id'] = id);
+    return id;
   }
 
   Future<Map> get(String id) {
-    return col.findOne(where.id(ObjectId.fromHexString(id))).then(removeId);
+    return col.findOne(where.eq('id', id)).then(removeId);
   }
 
   Future<ProgramInfo> getInfo(String id) {
     return col
-        .findOne(where
-            .id(ObjectId.fromHexString(id))
-            .excludeFields(['design', 'published']))
+        .findOne(where.eq('id', id).excludeFields(['design', 'published']))
         .then(ProgramInfo.serializer.fromMap);
   }
 
@@ -69,32 +62,28 @@ class ProgramAccessor {
 
   Future<void> save(String id, Map data) async {
     await col.update(
-        where.id(ObjectId.fromHexString(id)),
+        where.eq('id', id),
         modify
             .set("design", data)
             .set("savedAt", DateTime.now().toUtc().millisecondsSinceEpoch));
   }
 
   Future<void> setName(String id, String name) async {
-    await col.update(
-        where.id(ObjectId.fromHexString(id)), modify.set('name', name));
+    await col.update(where.eq('id', id), modify.set('name', name));
   }
 
   Future<void> setOwner(String id, String owner) async {
-    await col.update(
-        where.id(ObjectId.fromHexString(id)), modify.set('owner', owner));
+    await col.update(where.eq('id', id), modify.set('owner', owner));
     // TODO
   }
 
   Future<void> setPublish(String id, Map data, int at) => col.update(
-      where.id(ObjectId.fromHexString(id)),
-      modify.set('published', data).set('publishedAt', at));
+      where.eq('id', id), modify.set('published', data).set('publishedAt', at));
 
-  Future<Map> getPublished(String id) => col.findOne(where
-      .id(ObjectId.fromHexString(id))
-      .fields(['id', 'published', 'publishedAt']));
+  Future<Map> getPublished(String id) => col
+      .findOne(where.eq('id', id).fields(['id', 'published', 'publishedAt']));
 
   Future<void> delete(String id) async {
-    await col.remove(where.id(ObjectId.fromHexString(id)));
+    await col.remove(where.eq('id', id));
   }
 }
