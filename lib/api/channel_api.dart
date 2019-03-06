@@ -126,7 +126,7 @@ class ChannelRoutes extends Controller {
       return null;
     }
 
-    if (info.program == null) return "none";
+    if (info.program == null) return "None";
 
     final prog = await programAccessor.getInfo(info.program);
     if (prog == null) {
@@ -134,11 +134,9 @@ class ChannelRoutes extends Controller {
       return null;
     }
 
-    if (prog.publishedAt == null) return "none";
+    if (prog.publishedAt == null) return "${prog.id}:None";
 
-    final at = prog.publishedAt.toUtc().millisecondsSinceEpoch;
-
-    return "${prog.id}:$at";
+    return "${prog.id}:${publishedAtDateToHuman(prog.publishedAt)}";
   }
 
   @GetJson(path: '/:id/content')
@@ -172,7 +170,7 @@ class ChannelRoutes extends Controller {
     }
 
     return <String, dynamic>{
-      'id': '${info.program}:${map['publishedAt']}',
+      'id': '${info.program}:${publishedAtSecondsToHuman(map['publishedAt'])}',
       'design': map['published'],
     };
   }
@@ -197,7 +195,7 @@ class ChannelRoutes extends Controller {
     await eventsourceEventStreamer(ctx, sub.stream, onDone: () {
       print("Unsubscribed for $id!");
       sub.unsubscribe();
-    });
+    }, debug: id);
   }
 
   @PutJson(path: '/:id/playing')

@@ -197,14 +197,17 @@ class ProgramRoutes extends Controller {
 
     final saved = await accessor.get(id);
 
-    final at = DateTime.now().toUtc().millisecondsSinceEpoch;
+    final at = (DateTime.now().toUtc().difference(DateTime(2019))).inSeconds;
     await accessor.setPublish(id, saved["design"], at);
 
     final channelAccessor = ChannelAccessor(db);
     final channels = await channelAccessor.getByProgramsId(id);
     for (Channel ch in channels) {
       playerRT.publish(
-          "${ch.id}", Event(data: id + ':' + at.toString(), event: 'publish'));
+          ch.id,
+          Event(
+              data: id + ':' + publishedAtSecondsToHuman(at),
+              event: 'publish'));
     }
 
     // Fetch the program
@@ -239,7 +242,7 @@ class ProgramRoutes extends Controller {
     }
 
     return {
-      'id': '$id:${map['publishedAt']}',
+      'id': '$id:${publishedAtSecondsToHuman(map['publishedAt'])}',
       'design': map['published'],
     };
   }

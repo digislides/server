@@ -32,7 +32,7 @@ abstract class _$ServerUserSerializer implements Serializer<ServerUser> {
 }
 
 abstract class _$ProgramInfoSerializer implements Serializer<ProgramInfo> {
-  final _millisecondsProcessor = const MillisecondsProcessor();
+  final _seconds2019Processor = const Seconds2019Processor();
   @override
   Map<String, dynamic> toMap(ProgramInfo model) {
     if (model == null) return null;
@@ -41,8 +41,8 @@ abstract class _$ProgramInfoSerializer implements Serializer<ProgramInfo> {
     setMapValue(ret, 'name', model.name);
     setMapValue(ret, 'owner', model.owner);
     setMapValue(ret, 'members', codeMap(model.members, (val) => val as int));
-    setMapValue(ret, 'publishedAt',
-        _millisecondsProcessor.serialize(model.publishedAt));
+    setMapValue(
+        ret, 'publishedAt', _seconds2019Processor.serialize(model.publishedAt));
     return ret;
   }
 
@@ -55,7 +55,7 @@ abstract class _$ProgramInfoSerializer implements Serializer<ProgramInfo> {
     obj.owner = map['owner'] as String;
     obj.members = codeMap<int>(map['members'] as Map, (val) => val as int);
     obj.publishedAt =
-        _millisecondsProcessor.deserialize(map['publishedAt'] as int);
+        _seconds2019Processor.deserialize(map['publishedAt'] as int);
     return obj;
   }
 }
