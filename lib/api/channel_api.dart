@@ -155,7 +155,10 @@ class ChannelRoutes extends Controller {
     }
 
     if (info.program == null) {
-      return null;
+      return <String, dynamic>{
+        'id': 'None',
+        'design': null,
+      };
     }
 
     final map = await programAccessor.getPublished(info.program);
@@ -166,7 +169,10 @@ class ChannelRoutes extends Controller {
     }
 
     if (map['publishedAt'] == null) {
-      return null;
+      return <String, dynamic>{
+        'id': '${info.program}:None',
+        'design': null,
+      };
     }
 
     return <String, dynamic>{
@@ -192,10 +198,18 @@ class ChannelRoutes extends Controller {
 
     final sub = playerRT.subscribe(id);
 
-    await eventsourceEventStreamer(ctx, sub.stream, onDone: () {
+    await eventsourceEventStreamer(ctx, sub.stream, onDone: () async {
       print("Unsubscribed for $id!");
-      sub.unsubscribe();
-    }, debug: id);
+      await sub.unsubscribe();
+    }, debug: {'id': id, 'when': DateTime.now()});
+
+    /*
+    Future.delayed(Duration(minutes: 1)).then((_) async {
+      final response = ctx.req.ioRequest.response;
+      await response.flush();
+      await response.close();
+    });
+    */
   }
 
   @PutJson(path: '/:id/playing')

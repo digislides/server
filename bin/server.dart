@@ -27,7 +27,7 @@ void main(List<String> args) async {
   server.serializers[MimeTypes.json] = repo;
   server.userFetchers[ServerUser] = AuthFetcher();
   server.onException.add(logError);
-  server.log.onRecord.listen(print);
+  // TODO server.log.onRecord.listen(print);
 
   server.add(reflect(AuthApi()));
   server.add(reflect(UserApi()));
