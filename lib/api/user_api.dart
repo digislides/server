@@ -1,7 +1,7 @@
 part of 'api.dart';
 
 @GenController(path: '/api/auth')
-class AuthApi extends Controller {
+class AuthRoutes extends Controller {
   /// Signup route
   @Post(path: '/signup')
   Future<void> signup(Context ctx, Signup data, Db db) async {
@@ -34,7 +34,7 @@ class AuthApi extends Controller {
 }
 
 @GenController(path: '/api/user')
-class UserApi extends Controller {
+class UserRoutes extends Controller {
   /// Route to read current logged in user info
   @GetJson()
   Future<User> get(ServerUser user) async => user;

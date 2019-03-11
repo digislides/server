@@ -22,6 +22,7 @@ dependencies:
   common:
     path: ../common
   conn_pool: ^2.1.9
+  open_weather_api: ^1.5.5
 
 dev_dependencies:
   jaguar_serializer_cli:

@@ -9,3 +9,4 @@ import 'package:short_readable_id/short_readable_id.dart';
 part 'program_db.dart';
 part 'channel_db.dart';
 part 'user_db.dart';
+part 'weather_db.dart';

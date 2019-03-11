@@ -29,10 +29,11 @@ void main(List<String> args) async {
   server.onException.add(logError);
   // TODO server.log.onRecord.listen(print);
 
-  server.add(reflect(AuthApi()));
-  server.add(reflect(UserApi()));
+  server.add(reflect(AuthRoutes()));
+  server.add(reflect(UserRoutes()));
   server.add(reflect(ProgramRoutes()));
   server.add(reflect(ChannelRoutes()));
+  server.add(reflect(WeatherRoutes()));
 
   server.addRoute(getOnlyProxy('/*', 'http://localhost:9000/'));
 
