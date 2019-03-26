@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:convert';
+
 import 'package:jaguar/jaguar.dart';
 import 'package:jaguar_mongo/jaguar_mongo.dart';
 import 'package:mongo_dart/mongo_dart.dart';
@@ -18,6 +20,7 @@ import 'package:common/utils/id.dart';
 import 'package:common/utils/published_at_format.dart';
 
 part 'channel_api.dart';
+part 'player_api.dart';
 part 'program_api.dart';
 part 'user_api.dart';
 part 'weather_api.dart';

@@ -202,14 +202,31 @@ class ChannelRoutes extends Controller {
       print("Unsubscribed for $id!");
       await sub.unsubscribe();
     }, debug: {'id': id, 'when': DateTime.now()});
+  }
 
-    /*
-    Future.delayed(Duration(minutes: 1)).then((_) async {
-      final response = ctx.req.ioRequest.response;
-      await response.flush();
-      await response.close();
-    });
-    */
+  @WsStream(path: '/:id/ws')
+  Future<dynamic> ws(Context ctx, WebSocket ws) async {
+    String id = ctx.pathParams['id'];
+    Db db = ctx.getVariable<Db>();
+    ServerUser user = ctx.getVariable<ServerUser>();
+
+    final accessor = ChannelAccessor(db);
+
+    // Check if the user has read access
+    Channel info = await accessor.get(id);
+    if (info == null) {
+      return Response(resourceNotFound, statusCode: 401);
+    }
+    if (!info.hasReadAccess(user.id)) {
+      return Response(noReadAccess, statusCode: 401);
+    }
+
+    final sub = playerRT.subscribe(id);
+
+    return sub.stream.map((e) => json.encode({
+          'event': e.event,
+          'data': e.data,
+        }));
   }
 
   @PutJson(path: '/:id/playing')
