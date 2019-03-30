@@ -10,10 +10,13 @@ class MyConfig {
 
   final String pwdSalt;
 
+  final String mediaDir;
+
   MyConfig(
       {this.port: 10000,
       this.mongo: "mongodb://localhost:27018/echannel",
-      this.pwdSalt: "sdfsd324324324egdsgsdfgdfty245345dsdgfr456456546"});
+      this.pwdSalt: "sdfsd324324324egdsgsdfgdfty245345dsdgfr456456546",
+      this.mediaDir: "../media/"});
 
   static Future<MyConfig> load(List<String> args) async {
     return parseConfigArgs(args, serializer, defaultConf: MyConfig());

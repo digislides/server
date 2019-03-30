@@ -22,9 +22,9 @@ class PlayerRoutes extends Controller {
     final sub = playerRT.subscribe(id);
 
     return sub.stream.map((e) => json.encode({
-      'event': e.event,
-      'data': e.data,
-    }));
+          'event': e.event,
+          'data': e.data,
+        }));
   }
 
   @override

@@ -4,48 +4,39 @@ part of 'api.dart';
 class MediaImageRoutes extends Controller {
   /// Route to create a new program
   @PostJson()
-  Future<Map> create(Context ctx, Db db, ServerUser user) async {
+  Future<MediaImage> create(Context ctx, Db db, ServerUser user) async {
     // TODO validate
 
-    final fileField = await ctx.getFile("file");
-    if(fileField is! BinaryFileFormField) {
-      // TODO
-      return null;
-    }
+    final fileField = await ctx.getBinaryFile("file");
+
+    final id = idGenerator.generate();
+    final extension = path.extension(fileField.name);
+    final p = path.join(config.mediaDir, "$id.$extension");
+    await fileField.writeTo(p); // TODO catch failures
+
+    final data = await ctx.bodyAsMap().then(MediaCreator.serializer.fromMap);
 
     // Establish database connection
-    final accessor = ProgramAccessor(db);
+    final accessor = MediaImageAccessor(db);
 
-    final program = Program(
-        name: data.name,
-        owner: user.id,
-        members: {},
-        design: ProgramDesign(width: data.width, height: data.height, frames: [
-          Frame(
-              id: newId,
-              name: 'Main frame',
-              left: 0,
-              top: 0,
-              pages: [],
-              width: data.width,
-              height: data.height),
-        ]));
+    final model =
+        MediaImage(name: data.name, owner: user.id, tags: data.tags ?? []);
 
     // Create the program
-    final progId = await accessor.create(program);
+    await accessor.create(model);
 
     // Fetch the program
-    return accessor.get(progId);
+    return accessor.get(id);
   }
 
   /// Route to save a program
   @PutJson(path: '/:id')
-  Future<Map> save(
+  Future<MediaImage> save(
       Context ctx, Db db, String id, ServerUser user, MediaCreator data) async {
-    final accessor = ProgramAccessor(db);
+    final accessor = MediaImageAccessor(db);
 
     // Check if the current user has write access
-    ProgramInfo info = await accessor.getInfo(id);
+    MediaImage info = await accessor.get(id);
     if (info == null) {
       ctx.response = Response(resourceNotFound, statusCode: 401);
       return null;
@@ -64,17 +55,18 @@ class MediaImageRoutes extends Controller {
 
   /// Route to get a program by id
   @GetJson(path: '/:id')
-  Future<Map> getById(Context ctx, Db db, String id, ServerUser user) async {
-    final accessor = ProgramAccessor(db);
+  Future<MediaImage> getById(
+      Context ctx, Db db, String id, ServerUser user) async {
+    final accessor = MediaImageAccessor(db);
 
     // Check if the user has read access
-    ProgramInfo info = await accessor.getInfo(id);
+    MediaImage info = await accessor.get(id);
     if (info == null) {
       ctx.response = Response(resourceNotFound, statusCode: 401);
       return null;
     }
     if (!info.hasReadAccess(user.id)) {
-      ctx.response = Response(noReadAccess, statusCode: 401);
+      ctx.response = Response(noWriteAccess, statusCode: 401);
       return null;
     }
 
@@ -84,10 +76,10 @@ class MediaImageRoutes extends Controller {
   /// Route to delete a program by id
   @DeleteJson(path: '/:id')
   Future<void> delete(Context ctx, Db db, String id, ServerUser user) async {
-    final accessor = ProgramAccessor(db);
+    final accessor = MediaImageAccessor(db);
 
     // Check if the current user has write access
-    ProgramInfo info = await accessor.getInfo(id);
+    MediaImage info = await accessor.get(id);
     if (info == null) {
       ctx.response = Response(resourceNotFound, statusCode: 401);
       return null;
@@ -121,8 +113,136 @@ class MediaImageRoutes extends Controller {
   */
 
   @GetJson()
-  Future<List<Map>> getAll(Context ctx, Db db, ServerUser user) async {
+  Future<List<MediaImage>> getAll(Context ctx, Db db, ServerUser user) async {
+    final accessor = MediaImageAccessor(db);
+
+    // TODO implement pagination
+
+    return accessor.getByUser(user.id, search: ctx.query['search']);
+  }
+
+  @override
+  Future<void> before(Context ctx) async {
+    await mgoPool.call(ctx);
+    await Authorizer.authorize<ServerUser>(ctx);
+  }
+}
+
+@GenController(path: '/api/media/video')
+class MediaVideoRoutes extends Controller {
+  /// Route to create a new program
+  @PostJson()
+  Future<MediaVideo> create(Context ctx, Db db, ServerUser user) async {
+    // TODO validate
+
+    final fileField = await ctx.getBinaryFile("file");
+
+    final id = idGenerator.generate();
+    final extension = path.extension(fileField.name);
+    final p = path.join(config.mediaDir, "$id.$extension");
+    await fileField.writeTo(p); // TODO catch failures
+
+    final data = await ctx.bodyAsMap().then(MediaCreator.serializer.fromMap);
+
+    // Establish database connection
+    final accessor = MediaVideoAccessor(db);
+
+    final model =
+        MediaVideo(name: data.name, owner: user.id, tags: data.tags ?? []);
+
+    // Create the program
+    await accessor.create(model);
+
+    // Fetch the program
+    return accessor.get(id);
+  }
+
+  /// Route to save a program
+  @PutJson(path: '/:id')
+  Future<MediaVideo> save(
+      Context ctx, Db db, String id, ServerUser user, MediaCreator data) async {
+    final accessor = MediaVideoAccessor(db);
+
+    // Check if the current user has write access
+    MediaVideo info = await accessor.get(id);
+    if (info == null) {
+      ctx.response = Response(resourceNotFound, statusCode: 401);
+      return null;
+    }
+    if (!info.hasWriteAccess(user.id)) {
+      ctx.response = Response(noWriteAccess, statusCode: 401);
+      return null;
+    }
+
+    // Save
+    await accessor.save(id, data);
+
+    // Fetch the program
+    return accessor.get(id);
+  }
+
+  /// Route to get a program by id
+  @GetJson(path: '/:id')
+  Future<MediaVideo> getById(
+      Context ctx, Db db, String id, ServerUser user) async {
+    final accessor = MediaVideoAccessor(db);
+
+    // Check if the user has read access
+    MediaVideo info = await accessor.get(id);
+    if (info == null) {
+      ctx.response = Response(resourceNotFound, statusCode: 401);
+      return null;
+    }
+    if (!info.hasReadAccess(user.id)) {
+      ctx.response = Response(noWriteAccess, statusCode: 401);
+      return null;
+    }
+
+    return accessor.get(id);
+  }
+
+  /// Route to delete a program by id
+  @DeleteJson(path: '/:id')
+  Future<void> delete(Context ctx, Db db, String id, ServerUser user) async {
+    final accessor = MediaVideoAccessor(db);
+
+    // Check if the current user has write access
+    MediaVideo info = await accessor.get(id);
+    if (info == null) {
+      ctx.response = Response(resourceNotFound, statusCode: 401);
+      return null;
+    }
+    if (!info.hasWriteAccess(user.id)) {
+      ctx.response = Response(noWriteAccess, statusCode: 401);
+      return null;
+    }
+
+    await accessor.delete(id);
+  }
+
+  /*
+  /// Transfer ownership
+  @Post(path: '/ownership/:id/:newOwnerId')
+  Future<void> transferOwnership(
+      Context ctx, Db db, String id, String newOwnerId, ServerUser user) async {
     final accessor = ProgramAccessor(db);
+
+    ProgramInfo info = await accessor.getInfo(id);
+    if (info.owner != user.id) {
+      ctx.response = Response(notOwner, statusCode: 401);
+      return null;
+    }
+
+    // TODO check if the new user exists
+
+    // Set new owner id
+    await accessor.setOwner(id, newOwnerId);
+  }
+  */
+
+  @GetJson()
+  Future<List<MediaVideo>> getAll(Context ctx, Db db, ServerUser user) async {
+    final accessor = MediaVideoAccessor(db);
 
     // TODO implement pagination
 
