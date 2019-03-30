@@ -20,7 +20,8 @@ import 'package:common/utils/id.dart';
 import 'package:common/utils/published_at_format.dart';
 
 part 'channel_api.dart';
-part 'player_api.dart';
+part 'machine_api.dart';
+part 'media_api.dart';
 part 'program_api.dart';
 part 'user_api.dart';
 part 'weather_api.dart';
