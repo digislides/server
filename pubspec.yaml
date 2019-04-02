@@ -28,6 +28,6 @@ dev_dependencies:
   jaguar_serializer_cli:
   build_runner:
 
-dependency_overrides:
-  jaguar:
-    path: ../../jaguar/jaguar/jaguar
+#dependency_overrides:
+#  jaguar:
+#    path: ../../jaguar/jaguar/jaguar

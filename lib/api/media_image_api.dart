@@ -35,6 +35,7 @@ class MediaImageRoutes extends Controller {
         name: data.name,
         owner: user.id,
         tags: data.tags ?? [],
+        extension: extension,
         storage: length);
 
     // Create the program
