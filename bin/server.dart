@@ -35,6 +35,10 @@ void main(List<String> args) async {
   server.add(reflect(ChannelRoutes()));
   server.add(reflect(WeatherRoutes()));
 
+  server.add(reflect(MediaFontRoutes()));
+  server.add(reflect(MediaImageRoutes()));
+  server.add(reflect(MediaVideoRoutes()));
+
   server.addRoute(getOnlyProxy('/*', 'http://localhost:9000/'));
 
   await server.serve(logRequests: true);

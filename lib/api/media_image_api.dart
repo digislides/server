@@ -7,20 +7,31 @@ class MediaImageRoutes extends Controller {
   Future<MediaImage> create(Context ctx, Db db, ServerUser user) async {
     // TODO validate
 
+    final data = await ctx.bodyAsMap().then((m) {
+      m = m.map<String, dynamic>((k, v) => MapEntry(k, v));
+      print(m);
+      String tags = m["tags"];
+      if (tags != null && tags.length > 2) {
+        m["tags"] = tags.substring(1, tags.length - 1).split(",").toList();
+      } else {
+        m["tags"] = null;
+      }
+      return MediaCreator.serializer.fromMap(m);
+    });
+
     final fileField = await ctx.getBinaryFile("file");
 
     final id = idGenerator.generate();
-    final extension = path.extension(fileField.name);
-    final p = path.join(config.mediaDir, "$id.$extension");
+    final extension = path.extension(data.name);
+    final p = path.join(config.mediaDir, "$id$extension");
     final file = await fileField.writeTo(p); // TODO catch failures
     final length = await file.length();
-
-    final data = await ctx.bodyAsMap().then(MediaCreator.serializer.fromMap);
 
     // Establish database connection
     final accessor = MediaImageAccessor(db);
 
     final model = MediaImage(
+        id: id,
         name: data.name,
         owner: user.id,
         tags: data.tags ?? [],
