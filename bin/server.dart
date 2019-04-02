@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:jaguar/jaguar.dart';
 import 'package:jaguar_reflect/jaguar_reflect.dart';
 import 'package:jaguar_dev_proxy/jaguar_dev_proxy.dart';
@@ -38,6 +40,8 @@ void main(List<String> args) async {
   server.add(reflect(MediaFontRoutes()));
   server.add(reflect(MediaImageRoutes()));
   server.add(reflect(MediaVideoRoutes()));
+
+  server.staticFiles("/m/*", Directory(mys.config.mediaDir));
 
   server.addRoute(getOnlyProxy('/*', 'http://localhost:9000/'));
 
