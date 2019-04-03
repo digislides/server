@@ -106,6 +106,14 @@ class MediaImageRoutes extends Controller {
     }
 
     await accessor.delete(id);
+
+    // Delete file
+    Future.microtask(() async {
+      try {
+        final f = File(path.join(config.mediaDir, id + info.extension));
+        await f.delete();
+      } catch (e) {}
+    });
   }
 
   /*
