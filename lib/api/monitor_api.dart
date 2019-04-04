@@ -1,7 +1,7 @@
 part of 'api.dart';
 
-@GenController(path: '/api/player')
-class PlayerRoutes extends Controller {
+@GenController(path: '/api/monitor')
+class MonitorRoutes extends Controller {
   @WsStream(path: '/:id/rt')
   Future<dynamic> ws(Context ctx, WebSocket ws) async {
     String id = ctx.pathParams['id'];

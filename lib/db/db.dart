@@ -10,5 +10,6 @@ part 'program_db.dart';
 part 'channel_db.dart';
 part 'machine_db.dart';
 part 'media_db.dart';
+part 'monitor_db.dart';
 part 'user_db.dart';
 part 'weather_db.dart';

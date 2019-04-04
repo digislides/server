@@ -35,6 +35,7 @@ void main(List<String> args) async {
   server.add(reflect(UserRoutes()));
   server.add(reflect(ProgramRoutes()));
   server.add(reflect(ChannelRoutes()));
+  server.add(reflect(MonitorRoutes()));
   server.add(reflect(WeatherRoutes()));
 
   server.add(reflect(MediaFontRoutes()));

@@ -24,7 +24,7 @@ import 'package:common/utils/id.dart';
 import 'package:common/utils/published_at_format.dart';
 
 part 'channel_api.dart';
-part 'machine_api.dart';
+part 'monitor_api.dart';
 part 'media_font_api.dart';
 part 'media_image_api.dart';
 part 'media_video_api.dart';
