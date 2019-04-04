@@ -32,7 +32,7 @@ class MediaVideoRoutes extends Controller {
 
     final model = MediaVideo(
         id: id,
-        name: data.name,
+        name: path.basenameWithoutExtension(data.name),
         owner: user.id,
         tags: data.tags ?? [],
         extension: extension,

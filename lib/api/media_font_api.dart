@@ -32,7 +32,7 @@ class MediaFontRoutes extends Controller {
 
     final model = MediaFont(
         id: id,
-        name: data.name,
+        name: path.basenameWithoutExtension(data.name),
         owner: user.id,
         tags: data.tags ?? [],
         extension: extension,
