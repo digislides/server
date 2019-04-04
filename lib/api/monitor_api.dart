@@ -128,7 +128,6 @@ class MonitorRoutes extends Controller {
           'data': e.data,
         }));
         */
-     */
   }
 
   @override
