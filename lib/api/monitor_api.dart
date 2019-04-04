@@ -120,12 +120,15 @@ class MonitorRoutes extends Controller {
       return Response(noReadAccess, statusCode: 401);
     }
 
+    /*
     final sub = playerRT.subscribe(id);
 
     return sub.stream.map((e) => json.encode({
           'event': e.event,
           'data': e.data,
         }));
+        */
+     */
   }
 
   @override
