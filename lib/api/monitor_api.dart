@@ -122,6 +122,10 @@ class MonitorRoutes extends Controller {
 
     WebSocket ws = await ctx.req.upgradeToWebSocket;
 
+    ws.listen((data) {
+      // TODO
+    });
+
     // TODO
   }
 
