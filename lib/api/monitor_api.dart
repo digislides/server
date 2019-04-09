@@ -102,8 +102,9 @@ class MonitorRoutes extends Controller {
 
     return accessor.getByUser(user.id, search: ctx.query['search']);
   }
+
   @Get(path: '/:id/rt')
-  Future<dynamic> ws(Context ctx) async {
+  Future<void> ws(Context ctx) async {
     String id = ctx.pathParams['id'];
 
     Db db = ctx.getVariable<Db>();
@@ -122,11 +123,22 @@ class MonitorRoutes extends Controller {
 
     WebSocket ws = await ctx.req.upgradeToWebSocket;
 
-    ws.listen((data) {
-      // TODO
+    ws.listen((data) async {
+      if(data is! String) return;
+
+      final conn = monitors[id];
+      if(conn == null) {
+        // TODO
+        return;
+      }
+
+      final stream = await conn.send(json.decode(data));
+      stream.listen((rep) {
+        ws.add(rep..[id] = data["id"]);
+      });
     });
 
-    // TODO
+    ctx.response = SkipResponse();
   }
 
   @override
@@ -139,13 +151,17 @@ class MonitorRoutes extends Controller {
 @GenController(path: '/api/commander')
 class CommanderRoutes extends Controller {
   @Get(path: '/:id')
-  Future<dynamic> ws(Context ctx) async {
+  Future<void> ws(Context ctx) async {
     String id = ctx.pathParams['id'];
+
+    if (monitors.containsKey(id)) {
+      ctx.response = Response("A connection already present!", statusCode: 401);
+      return;
+    }
 
     WebSocket ws = await ctx.req.upgradeToWebSocket;
 
     Db db = ctx.getVariable<Db>();
-    ServerUser user = ctx.getVariable<ServerUser>();
 
     final accessor = MonitorAccessor(db);
 
@@ -153,33 +169,36 @@ class CommanderRoutes extends Controller {
       await ws.close();
     };
 
-    int i = 0;
-    String challenge = "dfgdfg";
-    Timer handshakeTimer = Timer(Duration(seconds: 30), () async {
+    Connection conn;
+    Timer handshakeTimer = Timer(Duration(minutes: 2), () async {
       await closeDown();
     });
 
     ws.listen((data) async {
       if (data is! String) return;
 
-      final repId = data["id"];
+      Map dataMap = jsonDecode(data);
 
-      if (repId == 0) {
-        // TODO authenticate
-
+      if (handshakeTimer != null) {
         handshakeTimer.cancel();
+
+        if (monitors.containsKey(id)) {
+          await closeDown();
+          return;
+        }
+
+        // Authenticate
+        if (dataMap["repcmd"] == "auth" && dataMap["pwd"] == "1234as") {
+          monitors[id] = conn = Connection(ws);
+          return;
+        }
+
         await closeDown();
         return;
       }
 
-      // TODO
+      await conn.processMessage(dataMap);
     });
-
-    ws.add(jsonEncode({
-      "id": i++,
-      "cmd": "auth",
-      "challenge": challenge,
-    }));
 
     /*
     // Check if the user has read access
@@ -191,10 +210,46 @@ class CommanderRoutes extends Controller {
       return Response(noReadAccess, statusCode: 401);
     }
     */
+
+    ctx.response = SkipResponse();
   }
 
   @override
   Future<void> before(Context ctx) async {
     await mgoPool(ctx);
+  }
+}
+
+final monitors = <String, Connection>{};
+
+class Connection {
+  final StreamSink<dynamic /*String|List<int>*/ > ws;
+
+  Connection(this.ws);
+
+  int _i = 0;
+
+  final _links = <int, StreamController<Map>>{};
+
+  void processMessage(Map data) async {
+    final int id = data["id"];
+    if (id is! int) return;
+    final controller = _links[id];
+    if (controller == null) return;
+
+    controller.add(data);
+    if (data["continue"] != null) {
+      _links.remove(id);
+      await controller.close();
+    }
+  }
+
+  Future<Stream<Map>> send(Map data) async {
+    final controller = StreamController<Map>();
+    int id = _i++;
+    _links[id] = controller;
+    data["id"] = id;
+    ws.add(json.encode(data));
+    return controller.stream;
   }
 }
