@@ -123,9 +123,39 @@ class CommanderRoutes extends Controller {
 
     final accessor = MonitorAccessor(db);
 
-    /*
-    ws.asBroadcastStream();
+    final closeDown = () async {
+      await ws.close();
+    };
 
+    int i = 0;
+    String challenge = "dfgdfg";
+    Timer handshakeTimer = Timer(Duration(seconds: 30), () async {
+      await closeDown();
+    });
+
+    ws.listen((data) async {
+      if (data is! String) return;
+
+      final repId = data["id"];
+
+      if (repId == 0) {
+        // TODO authenticate
+
+        handshakeTimer.cancel();
+        await closeDown();
+        return;
+      }
+
+      // TODO
+    });
+
+    ws.add(jsonEncode({
+      "id": i++,
+      "cmd": "auth",
+      "challenge": challenge,
+    }));
+
+    /*
     // Check if the user has read access
     Channel info = await accessor.get(id);
     if (info == null) {
@@ -135,15 +165,6 @@ class CommanderRoutes extends Controller {
       return Response(noReadAccess, statusCode: 401);
     }
     */
-
-    /*
-    final sub = playerRT.subscribe(id);
-
-    return sub.stream.map((e) => json.encode({
-          'event': e.event,
-          'data': e.data,
-        }));
-        */
   }
 
   @override
