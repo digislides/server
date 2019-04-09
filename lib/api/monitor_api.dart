@@ -103,13 +103,28 @@ class MonitorRoutes extends Controller {
     return accessor.getByUser(user.id, search: ctx.query['search']);
   }
 
-  @WsStream(path: '/:id/rt')
+  @override
+  Future<void> before(Context ctx) async {
+    await mgoPool(ctx);
+    await Authorizer.authorize<ServerUser>(ctx);
+  }
+}
+
+@GenController(path: '/api/commander')
+class CommanderRoutes extends Controller {
+  @WsStream(path: '/:id')
   Future<dynamic> ws(Context ctx, WebSocket ws) async {
     String id = ctx.pathParams['id'];
+
+    WebSocket ws = await ctx.req.upgradeToWebSocket;
+
     Db db = ctx.getVariable<Db>();
     ServerUser user = ctx.getVariable<ServerUser>();
 
-    final accessor = ChannelAccessor(db);
+    final accessor = MonitorAccessor(db);
+
+    /*
+    ws.asBroadcastStream();
 
     // Check if the user has read access
     Channel info = await accessor.get(id);
@@ -119,6 +134,7 @@ class MonitorRoutes extends Controller {
     if (!info.hasReadAccess(user.id)) {
       return Response(noReadAccess, statusCode: 401);
     }
+    */
 
     /*
     final sub = playerRT.subscribe(id);
@@ -133,6 +149,5 @@ class MonitorRoutes extends Controller {
   @override
   Future<void> before(Context ctx) async {
     await mgoPool(ctx);
-    await Authorizer.authorize<ServerUser>(ctx);
   }
 }
