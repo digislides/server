@@ -102,6 +102,28 @@ class MonitorRoutes extends Controller {
 
     return accessor.getByUser(user.id, search: ctx.query['search']);
   }
+  @Get(path: '/:id/rt')
+  Future<dynamic> ws(Context ctx) async {
+    String id = ctx.pathParams['id'];
+
+    Db db = ctx.getVariable<Db>();
+    ServerUser user = ctx.getVariable<ServerUser>();
+
+    final accessor = MonitorAccessor(db);
+
+    // Check if the user has read access
+    Monitor info = await accessor.get(id);
+    if (info == null) {
+      return Response(resourceNotFound, statusCode: 401);
+    }
+    if (!info.hasReadAccess(user.id)) {
+      return Response(noReadAccess, statusCode: 401);
+    }
+
+    WebSocket ws = await ctx.req.upgradeToWebSocket;
+
+    // TODO
+  }
 
   @override
   Future<void> before(Context ctx) async {
@@ -112,8 +134,8 @@ class MonitorRoutes extends Controller {
 
 @GenController(path: '/api/commander')
 class CommanderRoutes extends Controller {
-  @WsStream(path: '/:id')
-  Future<dynamic> ws(Context ctx, WebSocket ws) async {
+  @Get(path: '/:id')
+  Future<dynamic> ws(Context ctx) async {
     String id = ctx.pathParams['id'];
 
     WebSocket ws = await ctx.req.upgradeToWebSocket;
