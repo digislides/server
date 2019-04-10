@@ -124,17 +124,20 @@ class MonitorRoutes extends Controller {
     WebSocket ws = await ctx.req.upgradeToWebSocket;
 
     ws.listen((data) async {
-      if(data is! String) return;
+      if (data is! String) return;
 
       final conn = monitors[id];
-      if(conn == null) {
+      if (conn == null) {
         // TODO
         return;
       }
 
+      final dataMap = jsonDecode(data);
+
       final stream = await conn.send(json.decode(data));
       stream.listen((rep) {
-        ws.add(rep..[id] = data["id"]);
+        rep["id"] = dataMap["id"];
+        ws.add(jsonEncode(rep));
       });
     });
 
@@ -174,13 +177,30 @@ class CommanderRoutes extends Controller {
       await closeDown();
     });
 
+    Timer watchDog = Timer(Duration(minutes: 2), () async {
+      if (monitors[id] == conn) monitors.remove(id);
+      await closeDown();
+    });
+
     ws.listen((data) async {
       if (data is! String) return;
 
+      print(data);
+
       Map dataMap = jsonDecode(data);
+
+      if (dataMap["repcmd"] == "hb") {
+        watchDog.cancel();
+        watchDog = Timer(Duration(minutes: 2), () async {
+          if (monitors[id] == conn) monitors.remove(id);
+          await closeDown();
+        });
+        return;
+      }
 
       if (handshakeTimer != null) {
         handshakeTimer.cancel();
+        handshakeTimer = null;
 
         if (monitors.containsKey(id)) {
           await closeDown();
