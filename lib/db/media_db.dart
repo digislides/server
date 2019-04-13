@@ -152,11 +152,7 @@ class MediaFontAccessor {
       }
       b.eq("name", {"\$regex": search});
     }
-    return col
-        .find(b)
-        .map(removeId)
-        .map(MediaFont.serializer.fromMap)
-        .toList();
+    return col.find(b).map(removeId).map(MediaFont.serializer.fromMap).toList();
   }
 
   Future<void> save(String id, MediaCreator data) async {
