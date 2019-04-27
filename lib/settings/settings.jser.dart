@@ -14,6 +14,7 @@ abstract class _$MyConfigSerializer implements Serializer<MyConfig> {
     setMapValue(ret, 'port', model.port);
     setMapValue(ret, 'mongo', model.mongo);
     setMapValue(ret, 'pwdSalt', model.pwdSalt);
+    setMapValue(ret, 'mediaDir', model.mediaDir);
     return ret;
   }
 
@@ -23,7 +24,8 @@ abstract class _$MyConfigSerializer implements Serializer<MyConfig> {
     final obj = new MyConfig(
         port: map['port'] as int ?? getJserDefault('port'),
         mongo: map['mongo'] as String ?? getJserDefault('mongo'),
-        pwdSalt: map['pwdSalt'] as String ?? getJserDefault('pwdSalt'));
+        pwdSalt: map['pwdSalt'] as String ?? getJserDefault('pwdSalt'),
+        mediaDir: map['mediaDir'] as String ?? getJserDefault('mediaDir'));
     return obj;
   }
 }

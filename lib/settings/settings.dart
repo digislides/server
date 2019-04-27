@@ -22,6 +22,10 @@ class MyConfig {
     return parseConfigArgs(args, serializer, defaultConf: MyConfig());
   }
 
+  String toString() => toJson().toString();
+
+  Map toJson() => serializer.toMap(this);
+
   static final serializer = MyConfigSerializer();
 }
 

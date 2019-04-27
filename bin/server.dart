@@ -25,6 +25,8 @@ void logError(Context ctx, Object e, StackTrace t) {
 void main(List<String> args) async {
   await mys.init(args);
 
+  print(mys.config);
+
   final server = Jaguar(port: mys.config.port);
   server.serializers[MimeTypes.json] = repo;
   server.userFetchers[ServerUser] = AuthFetcher();

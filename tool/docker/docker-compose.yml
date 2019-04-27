@@ -11,6 +11,10 @@ services:
     restart: always
     secrets:
       - echannel_config
+    volumes:
+      - type: bind
+        source: ./media
+        target: /var/local/echannel/media
   web:
     image: echannel_web
     expose:
@@ -38,6 +42,9 @@ services:
       - web
     volumes:
       - ./nginx.conf:/etc/nginx/conf.d/default.conf
+      - type: bind
+        source: ./media
+        target: /var/local/echannel/media
     secrets:
       - ssl_cert.crt
       - ssl_key.pem
