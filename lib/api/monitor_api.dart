@@ -126,13 +126,17 @@ class MonitorRoutes extends Controller {
     ws.listen((data) async {
       if (data is! String) return;
 
+      final dataMap = jsonDecode(data);
+
       final conn = monitors[id];
       if (conn == null) {
-        // TODO
+        ws.add(jsonEncode({
+          "id": dataMap["id"],
+          "repcmd": dataMap["cmd"],
+          "failed": "No connection!",
+        }));
         return;
       }
-
-      final dataMap = jsonDecode(data);
 
       final stream = await conn.send(json.decode(data));
       stream.listen((rep) {
