@@ -14,7 +14,7 @@ class MyConfig {
 
   MyConfig(
       {this.port: 10000,
-      this.mongo: "mongodb://localhost:27018/echannel",
+      this.mongo: "mongodb://localhost:27017/echannel",
       this.pwdSalt: "sdfsd324324324egdsgsdfgdfty245345dsdgfr456456546",
       this.mediaDir: "../media/"});
 
