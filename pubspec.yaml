@@ -15,7 +15,7 @@ dependencies:
   jaguar_auth: ^2.4.4
   jaguar_mongo:
   jaguar_serializer: ^2.2.9
-  mongo_dart:
+  mongo_dart: ^0.3.6
   jaguar_reflect: ^2.4.6
   jaguar_dev_proxy:
   jaguar_eventsource: ^1.0.6
